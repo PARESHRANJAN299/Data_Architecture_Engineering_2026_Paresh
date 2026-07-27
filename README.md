@@ -1,16 +1,15 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f2027,50:2c5364,100:00c9ff&height=220&section=header&text=Paresh's%20Data%20Engineering%20Roadmap&fontSize=38&fontColor=ffffff&animation=fadeIn&fontAlignY=35&desc=₹8%20LPA%20→%20₹30%20LPA%20%7C%20SAT%20-%20Secure%20Device%20Intelligence%20Platform&descAlignY=55&descSize=17" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f2027,50:2c5364,100:00c9ff&height=220&section=header&text=Paresh's%20Data%20Engineering%20Roadmap&fontSize=38&fontColor=ffffff&animation=fadeIn&fontAlignY=35&desc=SAT%20-%20Secure%20Device%20Intelligence%20Platform%20%7C%206-Month%20Transformation%20Plan&descAlignY=55&descSize=17" width="100%"/>
 
 <a href="https://github.com/PARESHRANJAN299/TRANSFORMATION-PLAN-AI_-_Data_Engineering_25_Lakhs">
-  <img src="https://readme-typing-svg.demolab.com/?font=Fira+Code&size=22&pause=1000&color=00C9FF&center=true&vCenter=true&width=800&lines=Building+SAT+%E2%80%94+Secure+Device+Intelligence+Platform;SQL+%2B+Python+%2B+PySpark+%2B+AWS+%2B+Kafka+%2B+dbt;6-Month+Transformation+%7C+Started+Jan+20%2C+2025;Target%3A+%E2%82%B930+LPA+Data+Engineer" alt="Typing SVG" />
+  <img src="https://readme-typing-svg.demolab.com/?font=Fira+Code&size=22&pause=1000&color=00C9FF&center=true&vCenter=true&width=800&lines=Building+SAT+%E2%80%94+Secure+Device+Intelligence+Platform;SQL+%2B+Python+%2B+PySpark+%2B+AWS+%2B+Kafka+%2B+dbt;6-Month+Transformation+%7C+Started+Jan+20%2C+2025;Target%3A+Data+Engineer+Role" alt="Typing SVG" />
 </a>
 
 <br/>
 
 ![Start Date](https://img.shields.io/badge/Start%20Date-Jan%2020%2C%202025-2c5364?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-In%20Progress-00c9ff?style=for-the-badge)
-![Target](https://img.shields.io/badge/Target-%E2%82%B930%20LPA-ff6b6b?style=for-the-badge)
 ![Last Commit](https://img.shields.io/github/last-commit/PARESHRANJAN299/TRANSFORMATION-PLAN-AI_-_Data_Engineering_25_Lakhs?style=for-the-badge&color=2c5364&label=Last%20Commit)
 ![Repo Size](https://img.shields.io/github/repo-size/PARESHRANJAN299/TRANSFORMATION-PLAN-AI_-_Data_Engineering_25_Lakhs?style=for-the-badge&color=00c9ff)
 
@@ -33,7 +32,7 @@
 
 ## 🚀 About This Roadmap
 
-> **Mission:** Build the **SAT (Secure Device Intelligence Platform)** foundation while executing a structured **6-month transformation** from an **₹8 LPA** role into a **₹30 LPA Data Engineer**, across **Robotics, ML, AI, IoT, and Big Data**.
+> **Mission:** Build the **SAT (Secure Device Intelligence Platform)** foundation while executing a structured **6-month transformation** into a skilled **Data Engineer**, across **Robotics, ML, AI, IoT, and Big Data**.
 
 This repository is my single source of truth — every subject, every day of practice, every project, and every ounce of effort is tracked here, road-wise, subject-wise, and percentage-wise.
 
@@ -84,7 +83,7 @@ flowchart LR
         E2[10_Projects_Portfolio]
     end
 
-    P5 --> Goal((🎯 ₹30 LPA\nData Engineer))
+    P5 --> Goal((🎯 Skilled\nData Engineer))
 
     style Start fill:#0f2027,stroke:#00c9ff,color:#fff
     style Goal fill:#00c9ff,stroke:#0f2027,color:#000
@@ -94,7 +93,7 @@ flowchart LR
 
 ## 📊 Effort Allocation — Out of 100 per Subject
 
-Every subject is weighted **out of 100** based on interview impact, real-world usage, and depth required to hit the ₹30 LPA bar.
+Every subject is weighted **out of 100** based on interview impact, real-world usage, and depth required to become job-ready.
 
 | # | Subject | Folder | Effort / 100 | Progress |
 |---|---------|--------|:---:|---|
@@ -174,7 +173,7 @@ TRANSFORMATION-PLAN-AI_-_Data_Engineering_25_Lakhs/
 - [ ] Phase 3 — AWS Cloud, Kafka Streaming
 - [ ] Phase 4 — dbt Analytics, System Design
 - [ ] Phase 5 — Interview Preparation, Projects Portfolio
-- [ ] 🎯 Final Goal — ₹30 LPA Data Engineer Role
+- [ ] 🎯 Final Goal — Data Engineer Role
 
 ---
 
