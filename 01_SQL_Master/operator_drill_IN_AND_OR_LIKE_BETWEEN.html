@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Operator Drill — IN, AND, OR, LIKE, BETWEEN</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/alasql/4.17.3/alasql.min.js"></script>
+<style>
+  :root{
+    --ink:#12151c; --ink-2:#191d26;
+    --paper:#f1e9d8; --paper-2:#e8ddc4; --paper-line:#d9cba9;
+    --console-bg:#0b0d12; --console-text:#e8dfc8;
+    --brass:#c98a3e; --brass-2:#e0a55c;
+    --margin-red:#b5462f;
+    --correct:#3f8f5f; --correct-bg:#e4efe4;
+    --incorrect:#bf4b3a; --incorrect-bg:#f3e2dd;
+    --ink-text:#eae4d6; --ink-muted:#a9a294;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--ink); color:var(--ink-text); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; min-height:100vh; }
+  ::selection{background:var(--brass);color:#12151c;}
+
+  header{ position:sticky; top:0; z-index:50; background:linear-gradient(180deg,var(--ink) 0%, var(--ink) 85%, transparent 100%); padding:20px 24px 14px; border-bottom:1px solid #262b36; }
+  .header-row{ display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; max-width:1180px; margin:0 auto; }
+  .eyebrow{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--brass-2); margin:0 0 6px; }
+  h1{ font-family:'Fraunces',serif; font-weight:600; font-size:clamp(24px,4vw,34px); margin:0; line-height:1.05; color:var(--ink-text); }
+  h1 em{ color:var(--brass-2); font-style:normal; }
+  .header-meta{ text-align:right; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--ink-muted); }
+  .progress-wrap{ margin-top:6px; width:220px; }
+  .progress-track{ height:6px; border-radius:4px; background:#262b36; overflow:hidden; margin-top:6px; }
+  .progress-fill{ height:100%; background:linear-gradient(90deg,var(--brass),var(--brass-2)); width:0%; transition:width .5s ease; }
+
+  .schema-card{ max-width:1180px; margin:18px auto 0; background:var(--ink-2); border:1px solid #262b36; border-radius:10px; padding:14px 18px; }
+  .schema-head{ display:flex; align-items:center; justify-content:space-between; cursor:pointer; gap:12px; flex-wrap:wrap; }
+  .schema-title{ font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--ink-text); }
+  .schema-title b{ color:var(--brass-2); }
+  .schema-toggle{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-muted); border:1px solid #333a48; padding:4px 10px; border-radius:20px; background:transparent; }
+  .schema-body{ display:none; margin-top:14px; overflow-x:auto; }
+  .schema-body.open{ display:block; }
+  table.mini{ border-collapse:collapse; font-family:'IBM Plex Mono',monospace; font-size:12px; min-width:640px; width:100%; }
+  table.mini th, table.mini td{ padding:6px 10px; border-bottom:1px solid #262b36; text-align:left; white-space:nowrap; }
+  table.mini th{ color:var(--brass-2); font-weight:600; }
+  table.mini td{ color:var(--ink-muted); }
+
+  .cheatsheet{ max-width:1180px; margin:14px auto 0; display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; }
+  .cheat-item{ background:var(--ink-2); border:1px solid #262b36; border-radius:8px; padding:8px 12px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-muted); }
+  .cheat-item b{ color:var(--brass-2); display:block; font-size:12px; margin-bottom:2px; }
+
+  .tabs{ max-width:1180px; margin:22px auto 0; display:flex; gap:2px; padding:0 2px; }
+  .tab{ font-family:'IBM Plex Mono',monospace; font-size:13px; letter-spacing:.03em; padding:10px 18px; border-radius:10px 10px 0 0; cursor:pointer; border:none; background:var(--ink-2); color:var(--ink-muted); position:relative; top:1px; }
+  .tab .count{ opacity:.6; margin-left:6px; }
+  .tab.active{ background:var(--paper); color:#2a2410; font-weight:600; }
+  .tab.active .count{ opacity:.55; }
+
+  main{ max-width:1180px; margin:0 auto; padding:0 2px 90px; }
+  .sheet{ background:var(--paper); border-radius:0 10px 10px 10px; padding:26px 22px 30px; }
+  .section{ display:none; }
+  .section.active{ display:block; }
+  .qgrid{ display:grid; grid-template-columns:1fr; gap:18px; }
+
+  .card{ position:relative; background:var(--paper-2); border-radius:6px; padding:16px 18px 16px 26px; border-left:3px solid var(--margin-red); box-shadow:0 1px 0 rgba(0,0,0,.04); }
+  .card::before{ content:""; position:absolute; left:9px; top:0; bottom:0; width:1px; background:repeating-linear-gradient(to bottom, transparent 0 6px, var(--paper-line) 6px 7px); opacity:.6; }
+  .card-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+  .card-top-left{ display:flex; align-items:center; gap:10px; }
+  .qid{ font-family:'IBM Plex Mono',monospace; font-weight:600; color:var(--margin-red); font-size:14px; }
+  .concept-tag{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#6b6350; background:#ddd0ac; padding:3px 8px; border-radius:20px; letter-spacing:.02em; }
+  .status-pill{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; padding:3px 9px; border-radius:20px; letter-spacing:.03em; text-transform:uppercase; }
+  .status-pending{ background:#ddd0ac; color:#786d4e; }
+  .status-correct{ background:var(--correct-bg); color:var(--correct); }
+  .status-incorrect{ background:var(--incorrect-bg); color:var(--incorrect); }
+
+  .prompt{ font-size:14.5px; line-height:1.5; color:#2a2410; margin:4px 0 12px; }
+
+  textarea.sql-input{ width:100%; min-height:64px; resize:vertical; background:var(--console-bg); color:var(--console-text); border:1px solid #2a2f3a; border-radius:6px; font-family:'IBM Plex Mono',monospace; font-size:13px; padding:10px 12px; line-height:1.5; }
+  textarea.sql-input:focus{ outline:2px solid var(--brass); outline-offset:1px; }
+  textarea.sql-input::placeholder{ color:#565b66; }
+
+  .btn-row{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:center; }
+  button.run-btn{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; background:var(--brass); color:#211705; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; letter-spacing:.02em; }
+  button.run-btn:hover{ background:var(--brass-2); }
+  button.hint-btn{ font-family:'IBM Plex Mono',monospace; font-size:12px; background:transparent; color:#6b6350; border:1px solid #c9bc95; padding:7px 14px; border-radius:6px; cursor:pointer; }
+  button.hint-btn:hover{ border-color:#9a8e6a; color:#463f2a; }
+
+  .hint-box{ display:none; margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; background:#eaddb8; border:1px dashed #b9a978; padding:8px 12px; border-radius:6px; color:#5b5236; }
+  .hint-box.open{ display:block; }
+
+  .output{ margin-top:12px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; }
+  .output.hidden{ display:none; }
+  .output-msg{ padding:8px 12px; border-radius:6px; margin-bottom:8px; }
+  .output-msg.ok{ background:var(--correct-bg); color:var(--correct); }
+  .output-msg.err{ background:var(--incorrect-bg); color:var(--incorrect); }
+  .result-table-wrap{ overflow-x:auto; border:1px solid #d9cba9; border-radius:6px; }
+  table.result{ border-collapse:collapse; width:100%; font-size:11.5px; }
+  table.result th, table.result td{ padding:5px 9px; border-bottom:1px solid #e3d7b8; white-space:nowrap; text-align:left; }
+  table.result th{ background:#e3d7b8; color:#4a4327; }
+  table.result td{ color:#4a4327; }
+  .more-rows{ color:#8a8272; font-size:11px; padding:4px 2px 0; }
+
+  .completion-banner{ display:none; max-width:1180px; margin:18px auto 0; background:var(--ink-2); border:1px solid var(--brass); border-radius:10px; padding:18px 22px; font-family:'Fraunces',serif; font-size:18px; color:var(--brass-2); animation:slideIn .5s ease; }
+  .completion-banner.show{ display:block; }
+  .completion-banner span{ font-family:'Inter',sans-serif; font-size:13px; color:var(--ink-muted); display:block; margin-top:4px; }
+  @keyframes slideIn{ from{ opacity:0; transform:translateY(-8px);} to{opacity:1; transform:translateY(0);} }
+
+  .footer-row{ max-width:1180px; margin:20px auto 0; display:flex; justify-content:flex-end; padding:0 2px; }
+  .reset-btn{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-muted); background:transparent; border:1px solid #333a48; padding:6px 14px; border-radius:20px; cursor:pointer; }
+  .reset-btn:hover{ color:var(--ink-text); border-color:#4a5262; }
+
+  @media (prefers-reduced-motion: reduce){ .completion-banner{ animation:none; } }
+  @media (max-width:640px){ .header-row{ flex-direction:column; align-items:flex-start; } .header-meta{ text-align:left; } .progress-wrap{ width:100%; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div>
+      <p class="eyebrow">SQL Roadmap · Operator Drill</p>
+      <h1>IN · AND · OR · <em>LIKE</em> · BETWEEN</h1>
+    </div>
+    <div class="header-meta">
+      Weak-area reinforcement · sales_data
+      <div class="progress-wrap">
+        <span id="progress-count">0 / 20 solved</span>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="schema-card">
+  <div class="schema-head" onclick="toggleSchema()">
+    <div class="schema-title">📋 <b>sales_data</b> — product · region · units · revenue · sale_date · channel</div>
+    <div class="schema-toggle" id="schema-toggle-label">show sample rows ▾</div>
+  </div>
+  <div class="schema-body" id="schema-body"></div>
+</div>
+
+<div class="cheatsheet">
+  <div class="cheat-item"><b>IN</b>col IN ('A','B') = col='A' OR col='B'</div>
+  <div class="cheat-item"><b>AND</b>both sides must be true</div>
+  <div class="cheat-item"><b>OR</b>either side true is enough</div>
+  <div class="cheat-item"><b>LIKE</b>% = any text, any length</div>
+  <div class="cheat-item"><b>BETWEEN</b>a AND b, inclusive both ends</div>
+  <div class="cheat-item"><b>!= &nbsp;&gt;= &nbsp;&lt;=</b>not-equal · at-least · at-most</div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<main>
+  <div class="sheet">
+    <div class="section active" id="section-single"><div class="qgrid" id="grid-single"></div></div>
+    <div class="section" id="section-mixed"><div class="qgrid" id="grid-mixed"></div></div>
+  </div>
+</main>
+
+<div class="completion-banner" id="completion-banner">
+  All 20 down — IN, AND, OR, LIKE, BETWEEN, all locked in.
+  <span>Go back to yesterday's 8 unfinished Day 1 questions — this should make them click now.</span>
+</div>
+
+<div class="footer-row">
+  <button class="reset-btn" onclick="resetProgress()">↺ reset progress</button>
+</div>
+
+<script>
+const salesData = [
+  {product:'Soap', region:'North', units:120, revenue:6000, sale_date:'2026-05-03', channel:'Offline'},
+  {product:'Shampoo', region:'South', units:80, revenue:9600, sale_date:'2026-05-10', channel:'Online'},
+  {product:'Detergent', region:'East', units:300, revenue:21000, sale_date:'2026-05-15', channel:'Offline'},
+  {product:'Toothpaste', region:'West', units:45, revenue:2700, sale_date:'2026-05-20', channel:'Online'},
+  {product:'Chocolate Bar', region:'North', units:500, revenue:25000, sale_date:'2026-06-01', channel:'Online'},
+  {product:'Ketchup', region:'South', units:60, revenue:3000, sale_date:'2026-06-05', channel:'Offline'},
+  {product:'Cereal', region:'East', units:150, revenue:12000, sale_date:'2026-06-10', channel:'Online'},
+  {product:'Coffee', region:'West', units:90, revenue:13500, sale_date:'2026-06-12', channel:'Offline'},
+  {product:'Tea', region:'North', units:200, revenue:8000, sale_date:'2026-06-15', channel:'Online'},
+  {product:'Biscuits', region:'South', units:400, revenue:16000, sale_date:'2026-06-18', channel:'Offline'},
+  {product:'Noodles', region:'East', units:250, revenue:10000, sale_date:'2026-06-20', channel:'Online'},
+  {product:'Juice', region:'West', units:70, revenue:4200, sale_date:'2026-06-22', channel:'Offline'},
+  {product:'Soap', region:'South', units:130, revenue:6500, sale_date:'2026-06-25', channel:'Online'},
+  {product:'Shampoo', region:'North', units:95, revenue:11400, sale_date:'2026-06-28', channel:'Offline'},
+  {product:'Detergent', region:'West', units:310, revenue:24800, sale_date:'2026-07-01', channel:'Online'},
+  {product:'Toothpaste', region:'East', units:55, revenue:3300, sale_date:'2026-07-03', channel:'Offline'},
+  {product:'Chocolate Bar', region:'South', units:480, revenue:24000, sale_date:'2026-07-05', channel:'Offline'},
+  {product:'Ketchup', region:'North', units:65, revenue:3250, sale_date:'2026-07-08', channel:'Online'},
+  {product:'Cereal', region:'West', units:140, revenue:11200, sale_date:'2026-07-10', channel:'Offline'},
+  {product:'Coffee', region:'East', units:100, revenue:15000, sale_date:'2026-07-12', channel:'Online'},
+  {product:'Tea', region:'South', units:210, revenue:8400, sale_date:'2026-07-14', channel:'Offline'},
+  {product:'Biscuits', region:'North', units:420, revenue:16800, sale_date:'2026-07-16', channel:'Online'},
+  {product:'Noodles', region:'West', units:260, revenue:10400, sale_date:'2026-07-18', channel:'Offline'},
+  {product:'Juice', region:'East', units:75, revenue:4500, sale_date:'2026-07-20', channel:'Online'}
+];
+alasql('CREATE TABLE sales_data');
+alasql.tables.sales_data.data = salesData;
+
+const questions = [
+  {id:1, group:'single', concept:'IN', prompt:"Select product, region where region is East or West (use IN).", sql:"SELECT product, region FROM sales_data WHERE region IN ('East','West')"},
+  {id:2, group:'single', concept:'IN', prompt:"Select product, channel where channel is Online (use IN, even with just one value).", sql:"SELECT product, channel FROM sales_data WHERE channel IN ('Online')"},
+  {id:3, group:'single', concept:'AND', prompt:"Select product, revenue where channel = 'Online' AND units is greater than 100.", sql:"SELECT product, revenue FROM sales_data WHERE channel = 'Online' AND units > 100"},
+  {id:4, group:'single', concept:'AND', prompt:"Select product, units where region = 'South' AND units is greater than 50.", sql:"SELECT product, units FROM sales_data WHERE region = 'South' AND units > 50"},
+  {id:5, group:'single', concept:'OR', prompt:"Select product, channel where product = 'Tea' OR product = 'Coffee'.", sql:"SELECT product, channel FROM sales_data WHERE product = 'Tea' OR product = 'Coffee'"},
+  {id:6, group:'single', concept:'OR', prompt:"Select product, region where units is under 100 OR revenue is over 20000.", sql:"SELECT product, region FROM sales_data WHERE units < 100 OR revenue > 20000"},
+  {id:7, group:'single', concept:'LIKE', prompt:"Select product where product starts with 'C'.", sql:"SELECT product FROM sales_data WHERE product LIKE 'C%'"},
+  {id:8, group:'single', concept:'LIKE', prompt:"Select product where product ends with 'ea' (hint: Tea fits this).", sql:"SELECT product FROM sales_data WHERE product LIKE '%ea'"},
+  {id:9, group:'single', concept:'BETWEEN', prompt:"Select product, revenue where revenue is between 5000 and 12000.", sql:"SELECT product, revenue FROM sales_data WHERE revenue BETWEEN 5000 AND 12000"},
+  {id:10, group:'single', concept:'BETWEEN', prompt:"Select product, units where units is between 200 and 400.", sql:"SELECT product, units FROM sales_data WHERE units BETWEEN 200 AND 400"},
+  {id:11, group:'single', concept:'!=', prompt:"Select product, region where channel is not 'Offline'.", sql:"SELECT product, region FROM sales_data WHERE channel != 'Offline'"},
+  {id:12, group:'single', concept:'!=', prompt:"Select product, region where region is not 'West'.", sql:"SELECT product, region FROM sales_data WHERE region != 'West'"},
+  {id:13, group:'single', concept:'>=', prompt:"Select product, units where units is at least 200.", sql:"SELECT product, units FROM sales_data WHERE units >= 200"},
+  {id:14, group:'single', concept:'>=', prompt:"Select product, revenue where revenue is at least 15000.", sql:"SELECT product, revenue FROM sales_data WHERE revenue >= 15000"},
+  {id:15, group:'single', concept:'<=', prompt:"Select product, revenue where revenue is at most 5000.", sql:"SELECT product, revenue FROM sales_data WHERE revenue <= 5000"},
+  {id:16, group:'single', concept:'<=', prompt:"Select product, units where units is at most 70.", sql:"SELECT product, units FROM sales_data WHERE units <= 70"},
+
+  {id:17, group:'mixed', concept:'IN + AND', prompt:"Select product, region, channel where region is North or South (IN), AND channel is Online.", sql:"SELECT product, region, channel FROM sales_data WHERE region IN ('North','South') AND channel = 'Online'"},
+  {id:18, group:'mixed', concept:'LIKE + OR', prompt:"Select product where product starts with 'S' OR starts with 'J'.", sql:"SELECT product FROM sales_data WHERE product LIKE 'S%' OR product LIKE 'J%'"},
+  {id:19, group:'mixed', concept:'BETWEEN + AND + !=', prompt:"Select product, revenue where revenue is between 3000 and 10000, AND channel is not Online.", sql:"SELECT product, revenue FROM sales_data WHERE revenue BETWEEN 3000 AND 10000 AND channel != 'Online'"},
+  {id:20, group:'mixed', concept:'IN + AND/OR + <=', prompt:"Select product, region, units where (region is East or West, AND units is at least 100) OR (channel is Online AND revenue is at most 5000).", sql:"SELECT product, region, units FROM sales_data WHERE (region IN ('East','West') AND units >= 100) OR (channel = 'Online' AND revenue <= 5000)"}
+];
+
+const expected = {};
+questions.forEach(q=>{ expected[q.id] = alasql(q.sql); });
+
+const STORAGE_KEY = 'day1-operator-drill-progress';
+let state = { solved:{}, drafts:{} };
+
+async function loadState(){
+  try{ const res = await window.storage.get(STORAGE_KEY, false); if(res && res.value){ state = JSON.parse(res.value); } }
+  catch(e){}
+}
+async function saveState(){ try{ await window.storage.set(STORAGE_KEY, JSON.stringify(state), false); }catch(e){} }
+async function resetProgress(){
+  if(!confirm('Reset all progress for this drill?')) return;
+  state = { solved:{}, drafts:{} };
+  await saveState();
+  location.reload();
+}
+
+function normalizeRows(rows){
+  return rows.map(r=>{
+    const keys = Object.keys(r).sort();
+    const obj = {};
+    keys.forEach(k=>obj[k]=r[k]);
+    return JSON.stringify(obj);
+  }).sort();
+}
+function resultsMatch(a,b){
+  const na = normalizeRows(a), nb = normalizeRows(b);
+  if(na.length !== nb.length) return false;
+  return na.every((v,i)=>v===nb[i]);
+}
+function renderTable(rows){
+  if(!rows.length) return '<div class="output-msg ok">Query ran — 0 rows returned.</div>';
+  const cols = Object.keys(rows[0]);
+  const shown = rows.slice(0,8);
+  let html = '<div class="result-table-wrap"><table class="result"><thead><tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+  shown.forEach(r=>{ html += '<tr>' + cols.map(c=>`<td>${r[c]}</td>`).join('') + '</tr>'; });
+  html += '</tbody></table></div>';
+  if(rows.length > 8) html += `<div class="more-rows">+ ${rows.length-8} more row(s)</div>`;
+  return html;
+}
+function updateProgress(){
+  const solvedCount = Object.keys(state.solved).filter(k=>state.solved[k]).length;
+  document.getElementById('progress-count').textContent = `${solvedCount} / 20 solved`;
+  document.getElementById('progress-fill').style.width = (solvedCount/20*100)+'%';
+  document.getElementById('completion-banner').classList.toggle('show', solvedCount===20);
+}
+function setStatus(id, status){
+  const pill = document.getElementById(`status-${id}`);
+  pill.className = 'status-pill status-' + status;
+  pill.textContent = status;
+}
+function runQuery(id){
+  const ta = document.getElementById(`sql-${id}`);
+  const query = ta.value.trim();
+  const outputEl = document.getElementById(`output-${id}`);
+  state.drafts[id] = query;
+
+  if(!query){
+    outputEl.classList.remove('hidden');
+    outputEl.innerHTML = '<div class="output-msg err">Write a query first.</div>';
+    return;
+  }
+  let result;
+  try{ result = alasql(query); }
+  catch(e){
+    outputEl.classList.remove('hidden');
+    outputEl.innerHTML = `<div class="output-msg err">Syntax error — ${e.message}</div>`;
+    setStatus(id,'incorrect'); state.solved[id]=false; saveState(); return;
+  }
+  if(!Array.isArray(result)){
+    outputEl.classList.remove('hidden');
+    outputEl.innerHTML = '<div class="output-msg err">This should be a SELECT query.</div>';
+    setStatus(id,'incorrect'); state.solved[id]=false; saveState(); return;
+  }
+  const isCorrect = resultsMatch(result, expected[id]);
+  outputEl.classList.remove('hidden');
+  if(isCorrect){
+    outputEl.innerHTML = '<div class="output-msg ok">Correct — result matches.</div>' + renderTable(result);
+    setStatus(id,'correct'); state.solved[id]=true;
+  }else{
+    outputEl.innerHTML = '<div class="output-msg err">Runs fine, but result doesn\'t match yet.</div>' + renderTable(result);
+    setStatus(id,'incorrect'); state.solved[id]=false;
+  }
+  saveState(); updateProgress();
+}
+function toggleHint(id){ document.getElementById(`hint-${id}`).classList.toggle('open'); }
+
+const grids = { single:document.getElementById('grid-single'), mixed:document.getElementById('grid-mixed') };
+questions.forEach(q=>{
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="card-top-left"><span class="qid">Q${q.id}</span><span class="concept-tag">${q.concept}</span></div>
+      <span class="status-pill status-pending" id="status-${q.id}">pending</span>
+    </div>
+    <p class="prompt">${q.prompt}</p>
+    <textarea class="sql-input" id="sql-${q.id}" aria-label="SQL input for question ${q.id}" placeholder="SELECT ... FROM sales_data WHERE ..."></textarea>
+    <div class="btn-row">
+      <button class="run-btn" onclick="runQuery(${q.id})">Run query</button>
+      <button class="hint-btn" onclick="toggleHint(${q.id})">Hint</button>
+    </div>
+    <div class="hint-box" id="hint-${q.id}">${q.sql}</div>
+    <div class="output hidden" id="output-${q.id}"></div>
+  `;
+  grids[q.group].appendChild(card);
+});
+
+const tabDefs = [ {key:'single', label:'Single Operator', count:16}, {key:'mixed', label:'Mixed', count:4} ];
+const tabsEl = document.getElementById('tabs');
+tabDefs.forEach((t,i)=>{
+  const btn = document.createElement('button');
+  btn.className = 'tab' + (i===0 ? ' active':'');
+  btn.id = 'tab-'+t.key;
+  btn.innerHTML = `${t.label} <span class="count">${t.count}</span>`;
+  btn.onclick = ()=>switchTab(t.key);
+  tabsEl.appendChild(btn);
+});
+function switchTab(key){
+  tabDefs.forEach(t=>{
+    document.getElementById('tab-'+t.key).classList.toggle('active', t.key===key);
+    document.getElementById('section-'+t.key).classList.toggle('active', t.key===key);
+  });
+}
+
+function toggleSchema(){
+  const body = document.getElementById('schema-body');
+  const label = document.getElementById('schema-toggle-label');
+  body.classList.toggle('open');
+  label.textContent = body.classList.contains('open') ? 'hide sample rows ▴' : 'show sample rows ▾';
+}
+(function renderSchemaSample(){
+  const cols = Object.keys(salesData[0]);
+  let html = '<table class="mini"><thead><tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+  salesData.slice(0,8).forEach(r=>{ html += '<tr>' + cols.map(c=>`<td>${r[c]}</td>`).join('') + '</tr>'; });
+  html += '</tbody></table><div class="more-rows" style="color:#5c6472;margin-top:4px;">24 rows total in sales_data — showing first 8</div>';
+  document.getElementById('schema-body').innerHTML = html;
+})();
+
+(async function init(){
+  await loadState();
+  questions.forEach(q=>{
+    if(state.drafts[q.id]) document.getElementById(`sql-${q.id}`).value = state.drafts[q.id];
+    if(state.solved[q.id]) setStatus(q.id,'correct');
+  });
+  updateProgress();
+})();
+</script>
+</body>
+</html>
