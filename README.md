@@ -32,7 +32,7 @@
 
 ## 🚀 About This Roadmap
 
-> **Mission:** Build the **SAT (Secure Device Intelligence Platform)** foundation while executing a structured **6-month transformation** into a skilled **Data Engineer**, across **Robotics, ML, AI, IoT, and Big Data**.
+> **Mission:** Build the **SAT (Secure Device Intelligence Platform)** foundation while executing a structured **6-month transformation** — one subject, one day, one 1% improvement at a time — across **Robotics, ML, AI, IoT, and Big Data**.
 
 This repository is my single source of truth — every subject, every day of practice, every project, and every ounce of effort is tracked here, road-wise, subject-wise, and percentage-wise.
 
@@ -83,7 +83,7 @@ flowchart LR
         E2[10_Projects_Portfolio]
     end
 
-    P5 --> Goal((🎯 Skilled\nData Engineer))
+    P5 --> Goal((🎯 Top 1%\nMastery))
 
     style Start fill:#0f2027,stroke:#00c9ff,color:#fff
     style Goal fill:#00c9ff,stroke:#0f2027,color:#000
@@ -151,7 +151,7 @@ pie showData
 ```
 TRANSFORMATION-PLAN-AI_-_Data_Engineering_25_Lakhs/
 ├── 01_SQL_Master/                          # Phase 1 · Day-wise SQL curriculum + guides
-├── 02_Python_Master/                       # Phase 1 · Python for Data Engineering
+├── 02_Python_Master/                       # Phase 1 · Python fundamentals to advanced
 ├── 03_PySpark_Master/                      # Phase 2 · Distributed data processing
 ├── 04_System_Design/                       # Phase 4 · Engineering fundamentals
 ├── 05_DSA_Basics/                          # Phase 1 · Core data structures & algorithms
@@ -173,7 +173,7 @@ TRANSFORMATION-PLAN-AI_-_Data_Engineering_25_Lakhs/
 - [ ] Phase 3 — AWS Cloud, Kafka Streaming
 - [ ] Phase 4 — dbt Analytics, System Design
 - [ ] Phase 5 — Interview Preparation, Projects Portfolio
-- [ ] 🎯 Final Goal — Data Engineer Role
+- [ ] 🎯 Final Goal — Top 1% Mastery
 
 ---
 
