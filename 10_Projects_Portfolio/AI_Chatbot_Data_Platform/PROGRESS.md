@@ -21,13 +21,34 @@ Running log of actual work done, in order, with evidence. Update this file every
 
 ---
 
-### Entry 2 — (next)
+### Entry 2 — IAM role created for Bronze ingestion
+
+**Date:** August 2026
+**Status:** ✅ Done
+
+- Created `Glue_Chatbot_Bronze_Ingestion_Role`
+  `arn:aws:iam::939390173271:role/Glue_Chatbot_Bronze_Ingestion_Role`
+- Trust policy: trusted service `glue.amazonaws.com`, action `sts:AssumeRole`
+- Permissions attached (2 policies):
+  - `AWSGlueServiceRole` (AWS managed — general Glue permissions)
+  - `Bronze_Write_Access` (custom, currently inline — `s3:PutObject` + `s3:GetObject` scoped to `arn:aws:s3:::ai-chatbot-platform-data/bronze/*`)
+
+**What this proves:** the Glue job that will pull the dataset now has a real identity to assume, scoped to only touch the `bronze/` prefix — nothing else in the account.
+
+**Note for later:** `Bronze_Write_Access` landed as a *customer inline* policy rather than standalone/customer-managed. Works fine for now since only one job needs it; convert to a standalone policy later if a second ingestion job needs the same permission.
+
+---
+
+### Entry 3 — (next)
 
 **Status:** ⬜ Not started
 
+- Create the Glue ETL job (Python Shell engine) — `chatbot_bronze_ingestion`
+- Attach `Glue_Chatbot_Bronze_Ingestion_Role`
+- Add `--additional-python-modules` = `datasets,pyarrow`
+- Paste in the ingestion script, run it
 - Pull LMSYS Chatbot Arena Conversations dataset via the Hugging Face `datasets` library
-- Convert to Parquet
-- Upload to `s3://ai-chatbot-platform-data/bronze/`
+- Convert to Parquet, upload to `s3://ai-chatbot-platform-data/bronze/`
 
 ---
 
