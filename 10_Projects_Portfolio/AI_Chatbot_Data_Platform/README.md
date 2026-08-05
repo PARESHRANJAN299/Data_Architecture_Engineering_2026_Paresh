@@ -43,11 +43,11 @@ Source dataset → Kinesis Data Streams → S3 Bronze → Databricks (PySpark + 
 - [x] Problem statement defined
 - [x] Technology stack selected
 - [x] Architecture diagram designed
-- [ ] Step 1 — Pull source dataset, land into S3 Bronze
+- [x] Step 1 — Pull source dataset, land into S3 Bronze
   - [x] S3 buckets created (`bronze/`, `silver/`, `gold/` + Vector bucket)
   - [x] IAM role created (`Glue_Chatbot_Bronze_Ingestion_Role`, scoped to `bronze/*`)
-  - [ ] Glue Python Shell job created and run
-  - [ ] Dataset actually landed in `bronze/`
+  - [x] Glue Spark job created and run (`chatbot_bronze_ingestion_spark`)
+  - [x] Dataset landed in `bronze/chatbot_conversations/chatbot_conversations.parquet` — confirmed
 - [ ] Step 2 — Databricks Auto Loader ingestion + cleaning logic
 - [ ] Step 3 — Silver layer: structuring, dedup, embeddings to S3 Vector bucket
 - [ ] Step 4 — Gold layer: aggregations for BI, training-ready sets for AI/ML
