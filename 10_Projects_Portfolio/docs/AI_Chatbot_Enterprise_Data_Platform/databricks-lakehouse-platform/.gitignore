@@ -1,0 +1,11 @@
+.databricks/
+.terraform/
+*.tfstate*
+.idea/
+.vscode/
+target/
+__pycache__/
+.pytest_cache/
+.env
+*.log
+.DS_Store

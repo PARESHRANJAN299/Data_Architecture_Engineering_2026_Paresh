@@ -1,0 +1,14 @@
+bundle:
+  name: databricks-ai-data-platform
+
+include:
+  - infra/databricks/*.yml
+
+targets:
+  dev:
+    default: true
+    mode: development
+  stage:
+    mode: production
+  prod:
+    mode: production

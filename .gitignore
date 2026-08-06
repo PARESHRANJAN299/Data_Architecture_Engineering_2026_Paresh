@@ -3,3 +3,17 @@ IT_admin/Office2016/
 *.exe
 *.iso
 *.msi
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Microsoft Office temporary files
+~$*
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Microsoft Office temporary files
+~$*
