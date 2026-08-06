@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Commerce Event Envelope V1",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_type",
+    "schema_version",
+    "source",
+    "event_time",
+    "ingestion_time",
+    "partition_key",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ingestion_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "partition_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}
