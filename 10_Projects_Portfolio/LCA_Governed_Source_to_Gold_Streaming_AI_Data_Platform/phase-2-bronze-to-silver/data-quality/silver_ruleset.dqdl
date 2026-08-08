@@ -1,0 +1,18 @@
+# Silver layer data quality ruleset
+# Business rules as agreed with Product and Marketing stakeholders.
+# Evaluated by AWS Glue Data Quality on every Bronze -> Silver run.
+# Failures route the offending rows to the quarantine prefix; the job still completes.
+
+Rules = [
+
+    # --- Impressions -------------------------------------------------
+    IsComplete "impressions",
+    ColumnValues "impressions" >= 0,
+
+    # --- Cost --------------------------------------------------------
+    ColumnValues "cost" >= 0,
+
+    # --- Revenue -----------------------------------------------------
+    IsComplete "revenue"
+
+]
