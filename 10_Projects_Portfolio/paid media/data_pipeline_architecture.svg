@@ -1,0 +1,99 @@
+<svg viewBox="0 0 1500 850" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">
+
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#4B5563"/>
+  </marker>
+  <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#B45309"/>
+  </marker>
+  <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#15803D"/>
+  </marker>
+</defs>
+
+<rect x="0" y="0" width="1500" height="850" fill="#FFFFFF"/>
+<text x="750.0" y="42" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#111827" text-anchor="middle">Automating Data Quality &amp; Ingestion</text>
+<text x="750.0" y="68" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="400" fill="#6B7280" text-anchor="middle">From manual SharePoint intake to an automated Medallion pipeline feeding the AI/LCM model</text>
+<rect x="40" y="100" width="1420" height="8" rx="4" fill="#D97706" stroke="none" stroke-width="1.5"/>
+<text x="70" y="130" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#92400E" text-anchor="start">CURRENT STATE — Manual Process</text>
+<rect x="60" y="155" width="250" height="105" rx="10" fill="#FEF3E2" stroke="#D97706" stroke-width="1.5"/>
+<text x="185.0" y="179" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="700" fill="#92400E" text-anchor="middle">Client APIs / Feeds</text>
+<text x="185.0" y="205" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#78716C" text-anchor="middle">20-30 files per source</text>
+<line x1="314" y1="207.5" x2="336" y2="207.5" stroke="#B45309" stroke-width="2.2" stroke-dasharray="6,5" marker-end="url(#arrowRed)"/>
+<rect x="340" y="155" width="250" height="105" rx="10" fill="#FEF3E2" stroke="#D97706" stroke-width="1.5"/>
+<text x="465.0" y="179" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="700" fill="#92400E" text-anchor="middle">SharePoint / Excel</text>
+<text x="465.0" y="197" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="700" fill="#92400E" text-anchor="middle">(Manual Upload)</text>
+<text x="465.0" y="223" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#78716C" text-anchor="middle">Analyst downloads,</text>
+<text x="465.0" y="238" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#78716C" text-anchor="middle">re-uploads by hand</text>
+<line x1="594" y1="207.5" x2="616" y2="207.5" stroke="#B45309" stroke-width="2.2" stroke-dasharray="6,5" marker-end="url(#arrowRed)"/>
+<rect x="620" y="155" width="250" height="105" rx="10" fill="#FEF3E2" stroke="#D97706" stroke-width="1.5"/>
+<text x="745.0" y="179" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="700" fill="#92400E" text-anchor="middle">Data Team —</text>
+<text x="745.0" y="197" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="700" fill="#92400E" text-anchor="middle">Manual QC</text>
+<text x="745.0" y="223" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#78716C" text-anchor="middle">dtype checks · nulls ·</text>
+<text x="745.0" y="238" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#78716C" text-anchor="middle">duplicates · YoY compare</text>
+<line x1="874" y1="207.5" x2="896" y2="207.5" stroke="#B45309" stroke-width="2.2" stroke-dasharray="6,5" marker-end="url(#arrowRed)"/>
+<rect x="900" y="155" width="250" height="105" rx="10" fill="#FEF3E2" stroke="#D97706" stroke-width="1.5"/>
+<text x="1025.0" y="179" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="700" fill="#92400E" text-anchor="middle">Manual ‘Golden’</text>
+<text x="1025.0" y="197" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="700" fill="#92400E" text-anchor="middle">Dataset</text>
+<text x="1025.0" y="223" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#78716C" text-anchor="middle">Quality = whoever</text>
+<text x="1025.0" y="238" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#78716C" text-anchor="middle">reviewed it that day</text>
+<line x1="1154" y1="207.5" x2="1176" y2="207.5" stroke="#B45309" stroke-width="2.2" stroke-dasharray="6,5" marker-end="url(#arrowRed)"/>
+<rect x="1180" y="155" width="250" height="105" rx="10" fill="#FEF3E2" stroke="#D97706" stroke-width="1.5"/>
+<text x="1305.0" y="179" font-family="Arial, Helvetica, sans-serif" font-size="14.5" font-weight="700" fill="#92400E" text-anchor="middle">AI / LCM Team</text>
+<text x="1305.0" y="205" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#78716C" text-anchor="middle">Waits on manual</text>
+<text x="1305.0" y="220" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#78716C" text-anchor="middle">hand-off</text>
+<text x="70" y="280" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="700" fill="#9A3412" text-anchor="start">Pain points</text>
+<rect x="60" y="290" width="315" height="60" rx="8" fill="#FFF7ED" stroke="#FDBA74" stroke-width="1.2"/>
+<text x="217.5" y="326" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="600" fill="#9A3412" text-anchor="middle">Hours of manual review, every file</text>
+<rect x="395" y="290" width="315" height="60" rx="8" fill="#FFF7ED" stroke="#FDBA74" stroke-width="1.2"/>
+<text x="552.5" y="326" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="600" fill="#9A3412" text-anchor="middle">No standard quality rules</text>
+<rect x="730" y="290" width="315" height="60" rx="8" fill="#FFF7ED" stroke="#FDBA74" stroke-width="1.2"/>
+<text x="887.5" y="326" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="600" fill="#9A3412" text-anchor="middle">No audit trail or lineage</text>
+<rect x="1065" y="290" width="315" height="60" rx="8" fill="#FFF7ED" stroke="#FDBA74" stroke-width="1.2"/>
+<text x="1222.5" y="326" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="600" fill="#9A3412" text-anchor="middle">Doesn't scale past ~20-30 files</text>
+<line x1="750.0" y1="378" x2="750.0" y2="418" stroke="#374151" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="590.0" y="386" width="320" height="30" rx="15" fill="#111827" stroke="none" stroke-width="1.5"/>
+<text x="750.0" y="406" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">PROPOSED AUTOMATION</text>
+<rect x="40" y="438" width="1420" height="8" rx="4" fill="#15803D" stroke="none" stroke-width="1.5"/>
+<text x="70" y="468" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#14532D" text-anchor="start">PROPOSED STATE — Automated Medallion Pipeline</text>
+<rect x="60" y="493" width="250" height="130" rx="10" fill="#ECFDF5" stroke="#15803D" stroke-width="1.5"/>
+<text x="185.0" y="517" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#14532D" text-anchor="middle">Client APIs / Feeds</text>
+<text x="185.0" y="543" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#3F6212" text-anchor="middle">Any volume,</text>
+<text x="185.0" y="558" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#3F6212" text-anchor="middle">any source</text>
+<line x1="314" y1="558.0" x2="336" y2="558.0" stroke="#15803D" stroke-width="2.2"  marker-end="url(#arrowGreen)"/>
+<rect x="340" y="493" width="250" height="130" rx="10" fill="#ECFDF5" stroke="#15803D" stroke-width="1.5"/>
+<text x="465.0" y="517" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#14532D" text-anchor="middle">Bronze Layer</text>
+<text x="465.0" y="543" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#3F6212" text-anchor="middle">Auto Loader (cloudFiles)</text>
+<text x="465.0" y="558" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#3F6212" text-anchor="middle">schema capture</text>
+<text x="465.0" y="573" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#3F6212" text-anchor="middle">idempotent load</text>
+<line x1="594" y1="558.0" x2="616" y2="558.0" stroke="#15803D" stroke-width="2.2"  marker-end="url(#arrowGreen)"/>
+<rect x="620" y="493" width="250" height="140" rx="10" fill="#ECFDF5" stroke="#15803D" stroke-width="1.5"/>
+<text x="745.0" y="517" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#14532D" text-anchor="middle">Silver Layer</text>
+<text x="745.0" y="543" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#3F6212" text-anchor="middle">Automated quality rules:</text>
+<text x="745.0" y="558" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#3F6212" text-anchor="middle">null/dup/type checks +</text>
+<text x="745.0" y="573" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#3F6212" text-anchor="middle">DLT expectations +</text>
+<text x="745.0" y="588" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#3F6212" text-anchor="middle">reconciliation vs history</text>
+<line x1="874" y1="558.0" x2="896" y2="558.0" stroke="#15803D" stroke-width="2.2"  marker-end="url(#arrowGreen)"/>
+<rect x="900" y="493" width="250" height="130" rx="10" fill="#ECFDF5" stroke="#15803D" stroke-width="1.5"/>
+<text x="1025.0" y="517" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#14532D" text-anchor="middle">Gold Layer</text>
+<text x="1025.0" y="543" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#3F6212" text-anchor="middle">Curated, versioned,</text>
+<text x="1025.0" y="558" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#3F6212" text-anchor="middle">high-quality output</text>
+<line x1="1154" y1="558.0" x2="1176" y2="558.0" stroke="#15803D" stroke-width="2.2"  marker-end="url(#arrowGreen)"/>
+<rect x="1180" y="493" width="250" height="130" rx="10" fill="#ECFDF5" stroke="#15803D" stroke-width="1.5"/>
+<text x="1305.0" y="517" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#14532D" text-anchor="middle">AI / LCM Model</text>
+<text x="1305.0" y="543" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#3F6212" text-anchor="middle">Consistent, fast,</text>
+<text x="1305.0" y="558" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="400" fill="#3F6212" text-anchor="middle">fully logged input</text>
+<text x="70" y="658" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="700" fill="#14532D" text-anchor="start">Benefits</text>
+<rect x="60" y="668" width="315" height="60" rx="8" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1.2"/>
+<text x="217.5" y="704" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="600" fill="#14532D" text-anchor="middle">Automated, consistent quality rules</text>
+<rect x="395" y="668" width="315" height="60" rx="8" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1.2"/>
+<text x="552.5" y="704" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="600" fill="#14532D" text-anchor="middle">Full audit log &amp; data lineage</text>
+<rect x="730" y="668" width="315" height="60" rx="8" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1.2"/>
+<text x="887.5" y="704" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="600" fill="#14532D" text-anchor="middle">Scales to any file count</text>
+<rect x="1065" y="668" width="315" height="60" rx="8" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1.2"/>
+<text x="1222.5" y="704" font-family="Arial, Helvetica, sans-serif" font-size="12.5" font-weight="600" fill="#14532D" text-anchor="middle">Faster, more reliable time-to-model</text>
+<line x1="60" y1="768" x2="1440" y2="768" stroke="#E5E7EB" stroke-width="1.5"/>
+<text x="70" y="794" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#9CA3AF" text-anchor="start">Prepared by Paresh R — Data Engineering, DataPoem</text>
+<text x="1430" y="794" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#9CA3AF" text-anchor="end">For AI Team / Data Team / Data Engineering / Data Analysis sync</text>
+</svg>

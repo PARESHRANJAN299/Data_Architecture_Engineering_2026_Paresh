@@ -1,0 +1,10 @@
+.DS_Store
+.idea/
+.vscode/
+target/
+project/target/
+project/project/
+.metals/
+.bloop/
+*.log
+.env
