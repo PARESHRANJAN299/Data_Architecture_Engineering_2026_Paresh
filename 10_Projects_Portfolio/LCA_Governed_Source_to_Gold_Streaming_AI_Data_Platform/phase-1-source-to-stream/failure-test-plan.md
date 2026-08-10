@@ -3,6 +3,9 @@
 | Test | Injection | Expected behavior | Pass evidence |
 |---|---|---|---|
 | Source disconnect | Terminate network/session | Bounded backoff and reconnect; gap identified | Timeline and gap report |
+| Stale heartbeat | Suppress or stop heartbeat processing | Connection is marked unhealthy and alarm fires | Heartbeat-age metric and alarm evidence |
+| Coinbase sequence gap | Drop one source message in the test adapter | Gap is detected; best-effort REST recovery or explicit unrecovered-gap record | Gap report and recovery decision |
+| Multi-trade message | Provide one message containing multiple trades | Exactly one canonical event is produced per trade | Fixture and count reconciliation |
 | Task failure | Stop active ECS task | Service replaces task and restores ingestion | ECS events and recovery time |
 | Invalid payload | Remove required field/change type | Event quarantined; healthy flow continues | Object, metric, and correlation ID |
 | Kinesis partial failure | Stub failed record responses | Retry only failed records | Unit/integration report |
@@ -25,4 +28,4 @@ events_accepted
 = events_acknowledged_by_kinesis + events_in_retry_or_dlq
 ```
 
-Differences must be explainable by documented source semantics, test-window boundaries, or measured duplicates. “Close enough” is not a pass criterion.
+Differences must be explainable by documented Coinbase batching/connection semantics, test-window boundaries, measured duplicates, or an explicit unrecoverable source gap. “Close enough” is not a pass criterion.

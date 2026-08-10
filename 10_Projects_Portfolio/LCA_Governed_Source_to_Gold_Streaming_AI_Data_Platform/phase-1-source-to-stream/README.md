@@ -5,7 +5,8 @@
 ## Selected baseline
 
 ```text
-Market-data WebSocket/API
+Coinbase Advanced Trade public WebSocket
+market_trades + heartbeats | BTC-USD + ETH-USD
         ↓
 ECS Fargate source adapter
         ↓
@@ -24,9 +25,9 @@ Infrastructure       → Terraform + CI/CD
 
 ## Build order
 
-1. Confirm the source's authentication, terms, rate limits, ordering, replay, and reconnect behavior.
+1. Confirm Coinbase terms, current rate limits, message schema, ordering, recovery, and reconnect behavior against official documentation.
 2. Finalize the canonical contract and partition-key ADR.
-3. Write local contract tests with synthetic/public sample events.
+3. Write local contract tests with captured Coinbase fixtures plus synthetic invalid, duplicate, and gap cases.
 4. Build the containerized source adapter without AWS dependencies.
 5. Add Kinesis producer batching, partial-failure retry, backoff, and metrics.
 6. Provision the AWS environment through Terraform.
@@ -46,6 +47,19 @@ evidence/                generated test and review outputs
 ```
 
 These implementation directories will be created incrementally. Empty scaffolding is intentionally avoided.
+
+## Locked adapter rules
+
+- connect to `wss://advanced-trade-ws.coinbase.com`;
+- subscribe to `market_trades` and `heartbeats` for `BTC-USD` and `ETH-USD`;
+- publish one canonical event per trade, not one event per WebSocket message;
+- use `coinbase.market_trade.{product_id}.{trade_id}` as the deterministic event ID;
+- use `coinbase.advanced_trade#{product_id}` as the Kinesis partition key;
+- convert heartbeats into health metrics rather than business events;
+- treat REST recovery as best-effort and emit a gap report when recovery cannot be proven;
+- defer `level2` order-book state until the market-trade path passes Gate 1.
+
+See [`coinbase-source-specification.md`](coinbase-source-specification.md) for the source-to-contract mapping.
 
 ## Definition of done
 

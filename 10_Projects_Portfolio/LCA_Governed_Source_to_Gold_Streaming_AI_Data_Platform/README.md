@@ -10,7 +10,23 @@
 
 Build a reusable AWS data backbone that onboards heterogeneous real-time sources, converts them into governed event contracts, delivers them reliably through a streaming platform, and produces trusted data for analytics and AI.
 
-This is not only a market-data pipeline. Coinbase or DexPaprika is the first proving source for a platform that can later support customer events, application telemetry, IoT feeds, transactions, and partner APIs.
+The Phase 1 source is locked to the **Coinbase Advanced Trade public WebSocket**. The adapter consumes `market_trades` and `heartbeats` for `BTC-USD` and `ETH-USD`. Coinbase is the proving source for a platform that can later support customer events, application telemetry, IoT feeds, transactions, and partner APIs.
+
+## Locked Phase 1 source
+
+| Property | Decision |
+|---|---|
+| Provider | Coinbase Advanced Trade |
+| Endpoint | `wss://advanced-trade-ws.coinbase.com` |
+| Business channel | `market_trades` |
+| Operational channel | `heartbeats` |
+| Initial products | `BTC-USD`, `ETH-USD` |
+| Kinesis ordering domain | `event_source + product_id` |
+| Canonical event identity | `coinbase.market_trade.{product_id}.{trade_id}` |
+| Authentication | Public channels; no credential required for the initial scope |
+| Source replay | Best-effort REST recovery plus Kinesis retention; no unsupported replay guarantee |
+
+Detailed source behavior and mapping are defined in [`phase-1-source-to-stream/coinbase-source-specification.md`](phase-1-source-to-stream/coinbase-source-specification.md). The decision is recorded in [`ADR-004`](docs/decisions/ADR-004-coinbase-phase-1-source.md).
 
 ## Problem statement
 
@@ -33,7 +49,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    SRC[Streaming API / WebSocket] --> ECS[ECS Fargate source adapter]
+    SRC[Coinbase Advanced Trade<br/>market_trades + heartbeats] --> ECS[ECS Fargate source adapter]
     ECS --> VAL[Contract validation<br/>Glue Schema Registry]
     VAL -->|valid| KDS[Kinesis Data Streams]
     VAL -->|invalid| QUAR[S3 quarantine]
@@ -69,7 +85,7 @@ flowchart LR
 
 | Phase | Outcome | Primary technologies | Exit evidence |
 |---|---|---|---|
-| 1. Source to Stream | Reliable, governed event ingestion | ECS Fargate, Glue Schema Registry, Kinesis, SQS DLQ, DynamoDB control state, CloudWatch, Terraform | Reconnect, retry, replay, schema compatibility, zero unexplained loss in controlled tests |
+| 1. Source to Stream | Reliable, governed Coinbase trade ingestion | Coinbase Advanced Trade, ECS Fargate, Glue Schema Registry, Kinesis, SQS DLQ, DynamoDB control state, CloudWatch, Terraform | Reconnect, heartbeat, retry, gap reporting, schema compatibility, zero unexplained loss in controlled tests |
 | 2. Bronze to Silver | Immutable raw history and trustworthy datasets | Amazon Data Firehose, S3, Glue, Spark/Flink, Apache Iceberg, Glue Data Quality | Count reconciliation, deterministic deduplication, late-data handling, reproducible reprocessing |
 | 3. Silver to Gold | Governed business value and safe AI consumption | dbt/Glue, Athena, Redshift Serverless, QuickSight, SageMaker, Bedrock, Lake Formation | Approved metrics, lineage, role-based access, query SLOs, evaluated AI outputs |
 

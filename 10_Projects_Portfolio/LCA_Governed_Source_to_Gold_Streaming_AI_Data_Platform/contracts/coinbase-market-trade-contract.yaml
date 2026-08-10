@@ -1,0 +1,55 @@
+contract_version: 1.0.0
+status: approved-for-phase-1-build
+data_product: coinbase-market-trades
+owner:
+  business: Paresh Ranjan Rout
+  technical: Paresh Ranjan Rout
+purpose: Prove governed real-time source-to-Kinesis ingestion using public Coinbase trades.
+classification: public
+source:
+  provider: Coinbase Advanced Trade
+  endpoint: wss://advanced-trade-ws.coinbase.com
+  type: websocket
+  channels:
+    business: market_trades
+    health: heartbeats
+  products:
+    - BTC-USD
+    - ETH-USD
+  authentication: none-for-public-market-data
+  replay_capability: best-effort-rest-plus-kinesis-retention
+  ordering_scope: product_id
+schema:
+  name: market-trade
+  version: 1.0.0
+  compatibility: BACKWARD
+identity:
+  event_id: "coinbase.market_trade.{product_id}.{trade_id}"
+  partition_key: "coinbase.advanced_trade#{product_id}"
+quality:
+  required_fields:
+    - event_id
+    - product_id
+    - trade_id
+    - price
+    - size
+    - side
+    - source_event_time
+  uniqueness:
+    - event_id
+  freshness_target_seconds: 2
+  decimal_policy: preserve-price-and-size-as-strings
+operations:
+  heartbeat_required: true
+  stale_heartbeat_alarm_seconds: proposed-and-to-be-load-tested
+  gap_policy: detect-attempt-best-effort-recovery-and-report
+retention:
+  kinesis_hours: proposed-and-to-be-cost-tested
+  bronze_days: phase-2-decision
+  quarantine_days: proposed-and-to-be-approved
+consumers:
+  - phase-1-reconciliation-consumer
+approvals:
+  data_owner: approved
+  security: pending
+  architecture: approved

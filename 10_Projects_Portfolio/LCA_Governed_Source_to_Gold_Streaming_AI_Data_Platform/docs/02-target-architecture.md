@@ -21,7 +21,7 @@ flowchart TB
 ```mermaid
 flowchart LR
     subgraph P1[Phase 1 — Source to Stream]
-      S[WebSocket/API] --> F[ECS Fargate adapter]
+      S[Coinbase Advanced Trade<br/>market_trades + heartbeats] --> F[ECS Fargate adapter]
       F --> C[Canonical contract]
       C --> K[Kinesis Data Streams]
       C -->|invalid| Q[S3 quarantine]
@@ -46,21 +46,22 @@ flowchart LR
 
 ## Phase 1 detailed behavior
 
-1. An ECS Fargate service maintains the long-running external connection.
-2. The adapter parses the source event without discarding the original payload.
-3. It creates a stable `event_id`, timestamps receipt, assigns a partition key, and wraps the payload in the canonical envelope.
-4. AWS Glue Schema Registry enforces the registered contract and compatibility policy.
-5. Valid events are batch-written to Kinesis using bounded retries, exponential backoff, and partial-failure handling.
-6. Invalid events are encrypted and quarantined in S3 with a non-sensitive rejection reason.
-7. Events that exhaust delivery retries go to an SQS DLQ for investigation and redrive.
-8. DynamoDB stores checkpoints, source state, and idempotency records where required.
-9. CloudWatch exposes connection state, accepted/rejected records, delivery failures, throttling, age, lag, and cost-related utilization.
+1. An ECS Fargate service connects to `wss://advanced-trade-ws.coinbase.com` and subscribes to `market_trades` and `heartbeats` for `BTC-USD` and `ETH-USD`.
+2. Heartbeats update connection-health metrics and are not published as market-trade business events.
+3. A Coinbase message can contain multiple trades; the adapter emits one canonical event per trade without discarding the relevant source fields.
+4. It creates `event_id = coinbase.market_trade.{product_id}.{trade_id}`, timestamps receipt, and uses `coinbase.advanced_trade#{product_id}` as the partition key.
+5. AWS Glue Schema Registry enforces the registered contract and compatibility policy.
+6. Valid events are batch-written to Kinesis using bounded retries, exponential backoff, and partial-failure handling.
+7. Invalid events are encrypted and quarantined in S3 with a non-sensitive rejection reason.
+8. Events that exhaust delivery retries go to an SQS DLQ for investigation and redrive.
+9. DynamoDB stores the last observed source sequence, connection state, and idempotency records where required.
+10. CloudWatch exposes connection state, heartbeat age, sequence gaps, accepted/rejected records, delivery failures, throttling, lag, and cost-related utilization.
 
 ## Ordering and identity
 
-- Ordering is required only within a defined entity such as `source + instrument`; global ordering is not promised.
+- Ordering is required only within `coinbase.advanced_trade + product_id`; global ordering is not promised.
 - The Kinesis partition key uses that ordering domain and is monitored for hot partitions.
-- `event_id` is deterministic when the source provides stable identity; otherwise it is derived from selected immutable fields.
+- `event_id` is deterministically derived from Coinbase `product_id` and `trade_id`.
 - All consumers are idempotent because producer retries and downstream delivery can create duplicates.
 - `source_event_time`, `ingestion_time`, and `processing_time` remain separate.
 

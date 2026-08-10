@@ -10,6 +10,8 @@ These are design targets for validation. A target becomes an achieved SLO only a
 | Ingress latency | p95 under 2 seconds from adapter receipt to Kinesis acknowledgement under test load | Embedded timestamps and CloudWatch metric |
 | Adapter recovery | Healthy ingestion resumes within 5 minutes after an injected task failure | Failure-injection report |
 | Source reconnect | Bounded exponential backoff with jitter; no retry storm | Connection-state metrics and logs |
+| Coinbase heartbeat health | Stale heartbeat is detected within the approved test threshold | Last-heartbeat-age metric and alarm |
+| Source gap accountability | Every detected Coinbase sequence gap is recovered or explicitly reported as unrecovered | Gap register and reconciliation evidence |
 | Schema enforcement | 100% of published events pass the registered contract | Producer validation metric |
 | Invalid-event handling | 100% quarantined with safe reason and correlation ID | Quarantine inventory |
 | Duplicate safety | Duplicate input does not change final Silver result | Phase 2 idempotency test |
@@ -21,7 +23,8 @@ These are design targets for validation. A target becomes an achieved SLO only a
 
 - Delivery semantics: at least once.
 - Ordering scope: within the selected partition key; never global.
-- Recovery source: Kinesis retention after acceptance; upstream replay/checkpoint before acceptance; Bronze after Phase 2.
+- Recovery source: Kinesis retention after acceptance; Coinbase REST recovery before acceptance where available and provable; Bronze after Phase 2.
+- Source limitation: Coinbase REST recovery is best-effort and must never be represented as guaranteed complete historical replay.
 - RPO proposal for accepted events: zero unexplained loss in controlled failure tests.
 - RTO proposal for a single adapter task failure: five minutes.
 - Poison records: quarantine or DLQ; never block the healthy flow indefinitely.
@@ -59,6 +62,7 @@ Load tests must include normal, burst, hot-key, throttling, reconnect, malformed
 Every event carries `event_id`, `correlation_id`, source time, ingestion time, schema version, and source. Dashboards and alarms cover:
 
 - connection status and reconnect count;
+- last Coinbase heartbeat age and detected sequence gaps;
 - events received, accepted, rejected, retried, and failed;
 - `PutRecords` partial failures and throttling;
 - Kinesis incoming records/bytes and iterator age when consumers begin;

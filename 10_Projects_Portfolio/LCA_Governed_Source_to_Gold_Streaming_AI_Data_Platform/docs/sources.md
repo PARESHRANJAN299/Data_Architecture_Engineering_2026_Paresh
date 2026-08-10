@@ -2,6 +2,10 @@
 
 Architecture decisions should be checked against current primary documentation before implementation.
 
+- [Coinbase Advanced Trade WebSocket overview](https://docs.cdp.coinbase.com/coinbase-business/advanced-trade-apis/websocket/websocket-overview)
+- [Coinbase Advanced Trade WebSocket channels](https://docs.cdp.coinbase.com/coinbase-app/advanced-trade-apis/websocket/websocket-channels)
+- [Coinbase Advanced Trade public REST endpoints](https://docs.cdp.coinbase.com/coinbase-app/advanced-trade-apis/rest-api)
+- [Coinbase Advanced Trade WebSocket rate limits](https://docs.cdp.coinbase.com/coinbase-app/advanced-trade-apis/websocket/websocket-rate-limits)
 - [Amazon Kinesis Data Streams concepts and retention](https://docs.aws.amazon.com/streams/latest/dev/key-concepts.html)
 - [AWS Glue Schema Registry](https://docs.aws.amazon.com/glue/latest/dg/schema-registry.html)
 - [Amazon Data Firehose delivery behavior](https://docs.aws.amazon.com/firehose/latest/dev/basic-deliver.html)

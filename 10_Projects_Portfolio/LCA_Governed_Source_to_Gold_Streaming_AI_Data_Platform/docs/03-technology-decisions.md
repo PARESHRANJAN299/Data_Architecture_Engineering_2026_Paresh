@@ -2,6 +2,16 @@
 
 The selections below are the architecture baseline. Each remains subject to proof, cost measurement, and an ADR revisit trigger.
 
+## Phase 1 source
+
+| Option | Strengths | Limitations | Decision |
+|---|---|---|---|
+| Coinbase Advanced Trade WebSocket | Public real-time trades, stable product/trade identity, heartbeat channel, genuine burst and reconnect behavior | Best-effort source recovery; provider policy/schema dependency | **Locked: `market_trades` + `heartbeats`, `BTC-USD` + `ETH-USD`** |
+| Binance WebSocket | High-volume crypto feeds and order-book channels | Additional provider/region dependency and no advantage for the first proof | Not selected |
+| CoinPaprika/DexPaprika REST | Simple public enrichment and historical queries | Polling does not exercise the persistent-stream reliability model | Consider as later enrichment only |
+| Wikimedia EventStreams | Public SSE stream and different domain | Better as the second adapter to prove reuse | Phase 1 follow-on candidate |
+| Synthetic generator | Deterministic load, duplicates, malformed events and gaps | Does not prove real external-source behavior | Required test companion, not the primary source |
+
 ## Source runtime
 
 | Option | Strengths | Limitations | Decision |
@@ -71,6 +81,7 @@ Apache Iceberg is the target Silver/Gold table format because it supports schema
 
 ## Mandatory revisit triggers
 
+- Coinbase changes public access, endpoint, authentication, rate limits, terms, or message semantics;
 - sustained throughput or cost exceeds the validated Kinesis operating envelope;
 - source count or connector needs make Kafka/MSK materially simpler;
 - latency target requires stateful processing before S3;

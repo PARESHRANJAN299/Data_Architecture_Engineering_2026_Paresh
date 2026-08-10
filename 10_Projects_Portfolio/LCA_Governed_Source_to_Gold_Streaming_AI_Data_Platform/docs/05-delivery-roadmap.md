@@ -12,14 +12,17 @@ Problem → Requirements → Alternatives → ADR → Build → Failure test →
 
 ### Increment 1: Event contract
 
-- select the first source and record its replay/order behavior;
+- lock Coinbase Advanced Trade `market_trades` and `heartbeats` for `BTC-USD` and `ETH-USD`;
+- record its ordering, batching, connection, and best-effort recovery behavior;
 - create the canonical JSON Schema and sample events;
 - define schema ownership and compatibility policy;
 - implement local validation and contract tests.
 
 ### Increment 2: Source adapter
 
-- containerize a minimal adapter;
+- containerize a minimal Coinbase WebSocket adapter;
+- subscribe within the source connection window and monitor heartbeat age;
+- fan out each trade in a Coinbase message to one canonical event;
 - run it as an ECS Fargate service;
 - use task roles and Secrets Manager;
 - expose structured metrics without logging payloads.
@@ -37,6 +40,7 @@ Problem → Requirements → Alternatives → ADR → Build → Failure test →
 - add SQS DLQ for exhausted delivery;
 - add DynamoDB checkpoints/control state only where the use case proves it;
 - execute reconnect, task-kill, throttling, duplicate, and malformed-event tests.
+- execute Coinbase sequence-gap and stale-heartbeat tests.
 
 ### Increment 5: Production controls
 

@@ -37,9 +37,18 @@ Create a governed, reusable AWS streaming platform with four stable interfaces:
 | ML/AI team | Trusted and authorized training/context data | Governed Gold products and explicit AI approval gate |
 | Finance/FinOps | Predictable cost and ownership | Tags, budgets, unit-cost measures, lifecycle policies |
 
-## First proving use case
+## Locked proving use case
 
-A public market-data WebSocket/API feed is used to prove sustained connectivity, event ordering, changing schemas, burst traffic, replay, deduplication, and time-window analytics. It is a proving workload—not a limitation of the platform.
+The first source is the Coinbase Advanced Trade public WebSocket at `wss://advanced-trade-ws.coinbase.com`.
+
+- `market_trades` supplies the business events.
+- `heartbeats` proves connection health and drives operational metrics.
+- `BTC-USD` and `ETH-USD` are the initial product allowlist.
+- One Coinbase trade becomes one canonical `market.trade` event.
+- `product_id` defines the per-instrument Kinesis ordering domain.
+- Coinbase REST recovery is best-effort; Phase 1 does not claim source-side historical replay.
+
+This workload proves sustained connectivity, ordering, burst traffic, schema handling, deduplication, gap reporting, Kinesis replay, and time-window analytics. It is a proving workload—not a limitation of the platform.
 
 ## Proposed business outcomes
 
@@ -59,7 +68,7 @@ These are target outcomes to validate; they are not claimed as achieved until ev
 
 ### Phase 1 in scope
 
-- one market-data source adapter on ECS Fargate;
+- one Coinbase Advanced Trade `market_trades` source adapter on ECS Fargate;
 - canonical event envelope and schema compatibility policy;
 - Kinesis Data Streams as the real-time backbone;
 - invalid-event quarantine and exhausted-delivery DLQ;

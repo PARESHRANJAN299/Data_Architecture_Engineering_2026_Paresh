@@ -1,13 +1,13 @@
 {
-  "event_id": "coinbase-BTC-USD-1723284000123-123456",
+  "event_id": "coinbase.market_trade.BTC-USD.123456",
   "correlation_id": "ingestion-session-20260810-001",
   "event_type": "market.trade",
-  "event_source": "coinbase",
+  "event_source": "coinbase.advanced_trade",
   "schema_name": "market-trade",
   "schema_version": "1.0.0",
   "source_event_time": "2026-08-10T10:00:00.123Z",
   "ingestion_time": "2026-08-10T10:00:00.421Z",
-  "partition_key": "coinbase#BTC-USD",
+  "partition_key": "coinbase.advanced_trade#BTC-USD",
   "classification": "public",
   "trace": {
     "producer": "lca-market-source-adapter",
@@ -19,6 +19,8 @@
     "price": "118500.25",
     "size": "0.0021",
     "side": "buy",
-    "sequence": 123456
+    "trade_id": "123456",
+    "source_sequence_num": 987654,
+    "source_message_timestamp": "2026-08-10T10:00:00.200Z"
   }
 }
