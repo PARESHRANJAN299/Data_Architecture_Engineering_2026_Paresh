@@ -27,15 +27,19 @@ Infrastructure       → Terraform + CI/CD
 
 ## Build order
 
-1. Confirm Coinbase terms, current rate limits, message schema, ordering, recovery, and reconnect behavior against official documentation.
-2. Finalize the canonical contract and partition-key ADR.
-3. Write local contract tests with captured Coinbase fixtures plus synthetic invalid, duplicate, and gap cases.
-4. Build the containerized source adapter without AWS dependencies.
-5. Add Kinesis producer batching, partial-failure retry, backoff, and metrics.
-6. Provision the AWS environment through Terraform.
-7. Add quarantine, DLQ, Secrets Manager, IAM, KMS, CloudWatch, and CloudTrail.
-8. Execute load and failure tests.
-9. Publish evidence and request Gate 1 approval.
+| Step | Work item | Status | Required completion evidence |
+|---:|---|---|---|
+| 1 | Confirm Coinbase terms, endpoint, channels, products, rate limits and recovery limits | ✅ ACHIEVED | ADR-004, source specification and authoritative references |
+| 2 | Finalize the canonical contract, identity and partition rules | ✅ ACHIEVED | JSON/YAML checks and deterministic sample mapping |
+| 3 | Connect locally and capture sanitized source fixtures | 🟠 NEXT | Heartbeat, single-trade and multi-trade fixtures plus connection log |
+| 4 | Build and containerize the source adapter | ⬜ NOT STARTED | Unit, contract and container smoke tests |
+| 5 | Add Kinesis batching, partial-failure retry, backoff and metrics | ⬜ NOT STARTED | Integration and reconciliation report |
+| 6 | Provision the AWS environment through Terraform | ⬜ NOT STARTED | Validated plan, security scan and deployment evidence |
+| 7 | Add quarantine, DLQ, IAM, KMS, DynamoDB, CloudWatch and CloudTrail | ⬜ NOT STARTED | Access, redrive, alarm and audit evidence |
+| 8 | Execute load, reconnect, gap, duplicate, throttle and task-failure tests | ⬜ NOT STARTED | Failure-test report with measured SLO results |
+| 9 | Publish the evidence package and request Gate 1 approval | ⬜ NOT STARTED | Every Gate 1 control linked to passing evidence |
+
+Completed architecture or contract design is not treated as proof that the runtime works. A step changes to achieved only after its required evidence is committed.
 
 ## Phase 1 backlog
 

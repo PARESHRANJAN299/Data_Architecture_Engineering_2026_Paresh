@@ -124,7 +124,42 @@ flowchart LR
 
 **🟠 Status: IN PROGRESS**
 
-Phase 1 is the active build. Coinbase source selection and architecture are complete; adapter implementation and AWS deployment evidence remain in progress. Phases 2 and 3 are intentionally documented as target-state roadmaps, and their implementation starts only after the Phase 1 gate passes.
+**🔒 Source locked:** Coinbase Advanced Trade public WebSocket using `market_trades` and `heartbeats` for `BTC-USD` and `ETH-USD`.
+
+Phase 1 is the active build. Source selection, architecture, governance baseline, canonical mapping, and the initial contract are complete and repository-validated. Live Coinbase connectivity, adapter runtime, AWS infrastructure, deployment, and operational evidence have not yet passed their tests. Phases 2 and 3 remain target-state roadmaps until the Phase 1 gate passes.
+
+## Phase 1 execution tracker
+
+### Status legend
+
+- ✅ **ACHIEVED & VERIFIED** — deliverable exists and its listed repository check passed.
+- 🟠 **NEXT / IN PROGRESS** — current implementation focus; acceptance test has not passed yet.
+- ⬜ **NOT STARTED** — no completion claim and no test evidence yet.
+
+| Step | Deliverable | Status | Test or evidence |
+|---:|---|---|---|
+| 1 | Problem statement, scope and proposed outcomes | ✅ ACHIEVED & VERIFIED | Architecture documents and internal links validated |
+| 2 | Coinbase source decision | ✅ ACHIEVED & VERIFIED — **LOCKED** | ADR-004 accepted; endpoint, channels and products documented from official sources |
+| 3 | Target architecture, governance controls and AWS service decisions | ✅ ACHIEVED & VERIFIED | ADR set, control matrix, diagrams and presentation structural checks passed |
+| 4 | Canonical event and Coinbase data contract | ✅ ACHIEVED & VERIFIED — design baseline | JSON/YAML parse checks and deterministic sample identity/partition mapping passed; live fixture validation remains Step 5 |
+| 5 | Local Coinbase connectivity spike and captured fixtures | 🟠 **NEXT STEP** | Must prove subscribe, heartbeat, multi-trade parsing, reconnect and safe fixture capture |
+| 6 | Containerized local source adapter | ⬜ NOT STARTED | Unit, contract and container smoke tests required |
+| 7 | Kinesis producer and reconciliation consumer | ⬜ NOT STARTED | Local/AWS integration, partial-failure, duplicate and replay tests required |
+| 8 | Terraform AWS foundation | ⬜ NOT STARTED | Format, validate, security scan, plan and clean-environment deployment required |
+| 9 | ECS deployment, contracts, quarantine, DLQ and control state | ⬜ NOT STARTED | End-to-end source-to-Kinesis reconciliation and redrive tests required |
+| 10 | Observability, security, recovery and cost evidence | ⬜ NOT STARTED | Alarms, failure injection, runbooks, access tests and unit-cost report required |
+| 11 | Phase 1 Gate approval | ⬜ NOT STARTED | Every mandatory Gate 1 control must link to passing evidence |
+
+### Immediate next steps
+
+1. Create the local adapter and test directory structure.
+2. Connect to Coinbase and subscribe to both locked channels.
+3. Capture sanitized fixtures for heartbeat, single-trade and multi-trade messages.
+4. Implement canonical mapping without floating-point conversion of `price` or `size`.
+5. Add reconnect, stale-heartbeat, duplicate, malformed-message and sequence-discontinuity tests.
+6. Containerize and pass the local smoke test before creating AWS resources.
+
+The detailed implementation order and definition of done are maintained in [`phase-1-source-to-stream/README.md`](phase-1-source-to-stream/README.md).
 
 ## Definition of portfolio quality
 
