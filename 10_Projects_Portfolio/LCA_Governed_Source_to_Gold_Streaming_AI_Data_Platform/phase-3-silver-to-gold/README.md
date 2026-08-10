@@ -1,66 +1,31 @@
-# Phase 3 — Silver → Gold
+# Phase 3 — Silver to Gold, Analytics and AI Roadmap
 
-**AI/ML-Optimized Data Products & Governed Serving**
+Implementation begins only after Gate 2.
 
-**Status:** ⬜ Not started
+## Outcome
 
-## Objective
+- business-owned Gold data products;
+- versioned metric definitions and dimensional models;
+- Athena for ad-hoc workloads and Redshift Serverless for repeated BI workloads when justified;
+- QuickSight dashboards with freshness and access SLOs;
+- Lake Formation permissions and traceable lineage;
+- SageMaker/Bedrock use only approved Silver/Gold datasets;
+- evaluation and human oversight before AI outputs influence decisions.
 
-Transform approved Silver data into high-quality, consumption-ready data products optimized for Product ROI, Analytics, and AI/ML model execution — and serve them only after explicit approval.
+## Example market-data products
 
-## Capabilities delivered
+- `price_by_minute`;
+- `trading_volume_by_asset`;
+- `realized_volatility`;
+- `top_movers`;
+- `market_activity_summary`;
+- anomaly features with documented windows and thresholds.
 
-- Business-focused data transformation
-- AI/ML-ready feature and metric preparation
-- Product ROI and Marketing analytics datasets
-- Required dimensions, measures, attributes, derived metrics
-- Business-level aggregations and summaries
-- AI / semantic model alignment
-- Gold-layer schema optimization
-- Data product versioning and governance
-- End-to-end lineage and traceability
+## Core evidence
 
-## AWS services
-
-| Capability | Service |
-|---|---|
-| Business transformation | AWS Glue Spark, Amazon EMR |
-| Feature preparation | SageMaker Feature Store (point-in-time correct) |
-| Embeddings | S3 Vector buckets |
-| Schema optimization | Iceberg partitioning and compaction |
-| Data product versioning | Iceberg snapshots, SageMaker Catalog |
-| Governed serving | Lake Formation grants issued on approval |
-
-## Governance Gate 2 and the approval loop
-
-```
-Silver → transformation → GOLD CANDIDATE → stakeholder review
-                                              │
-                    ┌─────────── REJECTED ────┤
-                    │                          │
-                    ▼                          ▼
-        add columns / re-transform         APPROVED
-        re-validate / re-submit               │
-                    │                          ▼
-                    └──────────────►  Governed Gold Serving Layer
-```
-
-A Gold candidate is **versioned but not served**. It becomes consumable only after the CDO and Product Leadership approve. Rejection is a normal path, not a failure — feedback returns to Data Engineering, the data is reprocessed, and the product is resubmitted. This cycle repeats until approved.
-
-Once approved, the Gold Serving Layer is the **single governed consumption layer**. Product, Marketing, Analytics, BI, and AI/ML consume exclusively from it.
-
-## Output
-
-**Approved Gold Data Product** served through the governed consumption layer.
-
-## Build checklist
-
-- [ ] Business transformation logic written
-- [ ] ROI and derived metrics implemented per stakeholder specification
-- [ ] SageMaker Feature Store populated with point-in-time-correct features
-- [ ] Embeddings generated and written to S3 Vector bucket
-- [ ] Gold candidate versioned as an Iceberg snapshot
-- [ ] Data product published to SageMaker Catalog
-- [ ] Submitted to Gate 2
-- [ ] Approval received, Lake Formation grants issued
-- [ ] Consumer access verified per team
+- approved semantic definitions;
+- query accuracy, freshness, performance, and cost reports;
+- column/table access tests;
+- source-to-metric lineage;
+- dashboard operational runbook;
+- model evaluation, drift, privacy, and approval evidence.

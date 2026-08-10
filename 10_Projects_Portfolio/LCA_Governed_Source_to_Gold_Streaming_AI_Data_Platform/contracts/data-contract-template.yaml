@@ -1,0 +1,27 @@
+contract_version: 1.0.0
+data_product: replace-me
+owner:
+  business: replace-me
+  technical: replace-me
+purpose: replace-me
+classification: public
+source:
+  type: websocket
+  replay_capability: unknown
+  ordering_scope: replace-me
+schema:
+  name: replace-me
+  version: 1.0.0
+  compatibility: BACKWARD
+quality:
+  required_fields: []
+  uniqueness: [event_id]
+  freshness_target_seconds: null
+retention:
+  bronze_days: null
+  quarantine_days: null
+consumers: []
+approvals:
+  data_owner: pending
+  security: pending
+  architecture: pending

@@ -1,107 +1,109 @@
 # LCA Governed Source-to-Gold Streaming & AI Data Platform
 
-**Owner:** Paresh Ranjan Rout
-**Build start date:** 9 August 2026
-**Status:** Phase 1 in progress
-**Cloud:** AWS (native)
+**Owner and Lead Architect:** Paresh Ranjan Rout
 
----
+**Portfolio:** Data Architecture & Engineering 2026
 
-## Architecture Vision
+**Current delivery stage:** Architecture baseline and Phase 1 — Source to Stream
 
-Design and implement a secure, governed, scalable, streaming-enabled enterprise data architecture that transforms source-system data into trusted, standardized, business-ready, and AI/ML-optimized Gold data products through controlled **Source → Bronze → Silver → Gold** layers.
+## Mission
 
-> *"Ingest once, govern continuously, standardize progressively, approve explicitly, and serve trusted data from the Gold layer."*
+Build a reusable AWS data backbone that onboards heterogeneous real-time sources, converts them into governed event contracts, delivers them reliably through a streaming platform, and produces trusted data for analytics and AI.
 
-![AWS Blueprint](docs/aws-blueprint.png)
+This is not only a market-data pipeline. Coinbase or DexPaprika is the first proving source for a platform that can later support customer events, application telemetry, IoT feeds, transactions, and partner APIs.
 
----
+## Problem statement
 
-## What makes this architecture different — 5 key points
+Companies often integrate every new source with a separate pipeline. The result is duplicated engineering, inconsistent schemas, fragile retry logic, weak lineage, delayed analytics, and uncontrolled data entering AI systems.
 
-**1. Governance gates sit *between* layers, not at the end.**
-Most medallion architectures show data flowing Bronze → Silver → Gold as a pure pipeline. This one inserts formal approval checkpoints. Data does not promote because a job succeeded — it promotes because Senior Data Stakeholders, the CDO, and Product Leadership signed off on the schema, the business rules, and the data quality results.
+This architecture establishes a repeatable source-to-consumption framework:
 
-**2. The rejection loop is a first-class part of the architecture.**
-Most designs only draw the happy path. Here, *rejected → add columns → re-transform → re-validate → re-submit* is an explicit cycle in the diagram. It reflects how data products are actually delivered: negotiated with stakeholders over several rounds, not handed over once.
-
-**3. Column masking happens on write, not on read.**
-Salary and PII are tokenised in the Firehose Lambda transform **before** the record lands in Bronze. The raw sensitive value never physically exists on disk. The common alternative — store raw, mask at query time — is simpler to build but leaves the value recoverable. Trade-off accepted: masked values cannot be reversed, so anything requiring recovery is tokenised rather than masked.
-
-**4. Business rules are executable code, not prose in a document.**
-Stakeholder rules are expressed in AWS Glue Data Quality's DQDL, making them version-controlled, independently auditable, and automatically scored:
-
-```
-Rules = [
-    IsComplete "impressions",
-    ColumnValues "impressions" >= 0,
-    ColumnValues "cost" >= 0,
-    IsComplete "revenue"
-]
+```mermaid
+flowchart LR
+    S[External and internal sources] --> A[Reusable source adapters]
+    A --> C[Canonical event contract]
+    C --> K[Amazon Kinesis Data Streams]
+    K --> B[S3 Bronze]
+    B --> V[S3 Silver]
+    V --> G[Gold data products]
+    G --> Q[Analytics, APIs, ML and AI]
 ```
 
-That score becomes evidence in the approval pack rather than an assertion someone makes in a meeting.
+## Target architecture
 
-**5. Bronze is immutable, and nothing is ever consumed from it.**
-Every consumer reads Silver or Gold. Bronze exists solely as the replay layer. If a transformation defect is found months later, Silver and Gold are rebuilt from Bronze rather than being permanently wrong. Bad records are quarantined with a reason instead of failing the job — and the **quarantine rate** becomes a monitored signal that a producer changed something without telling anyone.
+```mermaid
+flowchart LR
+    SRC[Streaming API / WebSocket] --> ECS[ECS Fargate source adapter]
+    ECS --> VAL[Contract validation<br/>Glue Schema Registry]
+    VAL -->|valid| KDS[Kinesis Data Streams]
+    VAL -->|invalid| QUAR[S3 quarantine]
+    ECS -->|delivery exhausted| DLQ[SQS dead-letter queue]
+    ECS -. checkpoints and idempotency .-> DDB[DynamoDB control state]
 
----
+    KDS --> FH[Amazon Data Firehose]
+    FH --> BR[S3 Bronze<br/>immutable events]
+    BR --> ETL[Glue / Spark / Flink]
+    ETL --> SI[Silver Iceberg tables]
+    SI --> TR[dbt / Glue transforms]
+    TR --> GO[Gold data products]
+    GO --> ATH[Athena]
+    GO --> RS[Redshift Serverless]
+    GO --> AI[SageMaker / Bedrock]
 
-## The three phases
-
-| Phase | Transition | Focus |
-|---|---|---|
-| **Phase 1** | Source → Bronze | Secure CDC-based streaming ingestion, schema validation, column masking, governed raw preservation |
-| **Phase 2** | Bronze → Silver | Data quality validation, cleansing, standardization to the enterprise canonical model, SCD Type 2 — then **Governance Gate 1** |
-| **Phase 3** | Silver → Gold | Business transformation, ROI modelling, AI/ML feature and embedding preparation — then **Governance Gate 2** and governed serving |
-
----
-
-## Repository structure
-
-```
-├── docs/                        Architecture blueprint, service mapping, decision records
-│   └── decisions/               ADRs — why each significant choice was made
-├── phase-1-source-to-bronze/    Ingestion build
-│   ├── infrastructure/          IAM roles, policies, bucket configuration
-│   ├── scripts/                 Ingestion and transform code
-│   └── screenshots/             Console evidence
-├── phase-2-bronze-to-silver/    Quality and standardization build
-│   ├── data-quality/            DQDL rulesets
-│   ├── scripts/
-│   └── screenshots/
-├── phase-3-silver-to-gold/      Data product build
-│   ├── scripts/
-│   └── screenshots/
-├── governance/                  Cross-cutting controls
-│   ├── approval-gates/          Gate templates and approval records
-│   └── data-contracts/          Producer ↔ platform contracts
-├── tracking/                    The build story
-│   ├── PROGRESS.md              Dated build log
-│   ├── ERRORS.md                Troubleshooting log with root causes
-│   └── DECISIONS.md             Running decision log
-└── assets/diagrams/             Source files for diagrams
+    GOV[Governance: IAM · KMS · Lake Formation · Catalog · CloudTrail] -. controls .-> VAL
+    GOV -. controls .-> BR
+    GOV -. controls .-> SI
+    GOV -. controls .-> GO
 ```
 
----
+## Architecture visuals
 
-## AWS services used
-
-| Layer | Services |
+| View | Diagram |
 |---|---|
-| Ingestion | AWS DMS (CDC), Kinesis Data Streams, AWS IoT Core, Amazon Data Firehose |
-| Schema & masking | Glue Schema Registry, Lambda transform, KMS, VPC endpoints |
-| Storage | Amazon S3 (Bronze / Silver / Gold), Apache Iceberg, S3 Vector buckets |
-| Processing | AWS Glue Spark, AWS Glue Data Quality, Amazon EMR |
-| AI/ML | SageMaker Feature Store, SageMaker |
-| Serving | Athena, Redshift, QuickSight |
-| Governance | IAM, Lake Formation (tag-based access control), Amazon Macie, Glue Data Catalog, SageMaker Catalog, CloudTrail, CloudWatch, Step Functions |
+| Three-phase delivery model | [Open PNG](architecture/three-phase-delivery-model.png) |
+| Phase 1 source-to-stream flow | [Open PNG](architecture/phase-1-source-to-stream.png) |
+| Governance control plane | [Open PNG](architecture/governance-control-plane.png) |
+| Automated delivery flow | [Open PNG](architecture/automated-delivery-flow.png) |
 
----
+## Three delivery phases
 
-## Documentation
+| Phase | Outcome | Primary technologies | Exit evidence |
+|---|---|---|---|
+| 1. Source to Stream | Reliable, governed event ingestion | ECS Fargate, Glue Schema Registry, Kinesis, SQS DLQ, DynamoDB control state, CloudWatch, Terraform | Reconnect, retry, replay, schema compatibility, zero unexplained loss in controlled tests |
+| 2. Bronze to Silver | Immutable raw history and trustworthy datasets | Amazon Data Firehose, S3, Glue, Spark/Flink, Apache Iceberg, Glue Data Quality | Count reconciliation, deterministic deduplication, late-data handling, reproducible reprocessing |
+| 3. Silver to Gold | Governed business value and safe AI consumption | dbt/Glue, Athena, Redshift Serverless, QuickSight, SageMaker, Bedrock, Lake Formation | Approved metrics, lineage, role-based access, query SLOs, evaluated AI outputs |
 
-- [AWS Blueprint — full service mapping and design decisions](docs/aws-blueprint.md)
-- [Build progress log](tracking/PROGRESS.md)
-- [Troubleshooting log](tracking/ERRORS.md)
-- [Decision log](tracking/DECISIONS.md)
+## Architecture principles
+
+1. Start with the business failure, not the AWS service.
+2. Prefer managed services until control or portability requirements justify operational complexity.
+3. Design for at-least-once delivery and idempotent processing; do not claim end-to-end exactly-once.
+4. Preserve immutable raw history before applying business transformations.
+5. Treat schemas, ownership, classification, quality, lineage, and retention as part of the data product.
+6. Apply governance, observability, security, and cost controls from Phase 1.
+7. Promote only when measurable architecture gates pass.
+8. Record every material decision and its revisit trigger in an ADR.
+
+## Repository map
+
+| Path | Purpose |
+|---|---|
+| [`docs/01-problem-statement.md`](docs/01-problem-statement.md) | Business context, stakeholders, scope, and measurable outcomes |
+| [`docs/02-target-architecture.md`](docs/02-target-architecture.md) | Logical architecture, flows, boundaries, and failure behavior |
+| [`docs/03-technology-decisions.md`](docs/03-technology-decisions.md) | AWS service selection, alternatives, pros, cons, and triggers |
+| [`docs/04-non-functional-requirements.md`](docs/04-non-functional-requirements.md) | Proposed reliability, performance, security, recovery, and cost SLOs |
+| [`docs/05-delivery-roadmap.md`](docs/05-delivery-roadmap.md) | Three phases, work increments, gates, and evidence |
+| [`governance/`](governance/) | Governance operating model, control matrix, and approval gates |
+| [`contracts/`](contracts/) | Canonical JSON Schema, sample event, and contract metadata |
+| [`automation/`](automation/) | CI/CD, infrastructure, schema, security, and data-quality automation |
+| [`architecture/`](architecture/) | Presentation-ready architecture, governance, and automation diagrams |
+| [`phase-1-source-to-stream/`](phase-1-source-to-stream/) | The only implementation scope currently authorized |
+| [`docs/presentation/`](docs/presentation/) | Executive and technical architecture deck |
+
+## Current boundary
+
+Phase 1 is the active build. Phases 2 and 3 are intentionally documented as target-state roadmaps; their implementation starts only after the Phase 1 gate passes.
+
+## Definition of portfolio quality
+
+This project earns credibility through evidence rather than diagrams alone: reproducible infrastructure, failure-injection results, reconciliation reports, ADRs, cost estimates, security controls, runbooks, dashboards, and a traceable path from source event to business metric.

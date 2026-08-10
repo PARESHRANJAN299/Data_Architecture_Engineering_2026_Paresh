@@ -1,37 +1,60 @@
-# Governance
+# Governance Operating Model
 
-Cross-cutting controls that apply to **every** phase, not a stage at the end.
+Governance is a design constraint and an automated operating practice—not a final documentation step.
 
-## Control areas
+## Governance lifecycle
 
-| Area | Implementation |
+```mermaid
+flowchart LR
+    D[Discover] --> C[Classify]
+    C --> O[Assign owner]
+    O --> P[Apply policy]
+    P --> M[Monitor]
+    M --> E[Retain evidence]
+    E --> R[Review and improve]
+```
+
+## Accountable roles
+
+| Role | Accountability |
 |---|---|
-| Data security | IAM, KMS encryption, VPC endpoints |
-| Access control | IAM roles + Lake Formation tag-based access control (LF-TBAC) |
-| Data quality | AWS Glue Data Quality (DQDL rulesets) |
-| Metadata | Glue Data Catalog, SageMaker Catalog |
-| Data lineage | Column-level lineage across Bronze → Silver → Gold |
-| Schema governance | Glue Schema Registry, validation on write |
-| PII discovery | Amazon Macie scheduled scans |
-| Auditability | CloudTrail |
-| Monitoring | CloudWatch — freshness SLAs, quarantine rate alarms |
-| Approval | SageMaker Catalog publish / subscribe / approve workflow |
+| Platform owner — Paresh Ranjan Rout | Architecture integrity, roadmap, SLOs, cost, and final technical recommendation |
+| Data product owner | Business purpose, consumers, retention, and quality expectations |
+| Data steward | Classification, definitions, quality rules, and remediation |
+| Data engineer | Contracts, pipelines, tests, lineage, and operational evidence |
+| Security owner | Threat model, access, encryption, incident controls, and exceptions |
+| Cloud/platform engineer | Accounts, network, IaC, deployment, observability, and recovery |
+| Consumer owner | Approved use, query behavior, downstream quality, and AI safeguards |
 
-## Why tag-based access control
+## Data classification
 
-With multiple consuming teams, writing individual grants per team per table does not scale. Columns are tagged (`pii=true`, `domain=finance`) and access is granted against **tags** rather than individual tables. Adding a new table with existing tags requires no new grants.
+| Class | Examples | Minimum controls |
+|---|---|---|
+| Public | Published market prices | Integrity, source attribution, encryption, retention |
+| Internal | Pipeline metrics and non-sensitive operational metadata | Authenticated access, encryption, logging |
+| Confidential | Customer/business data and proprietary metrics | Least privilege, masking, monitored access, approved sharing |
+| Restricted | Credentials, regulated identifiers, high-impact secrets | Never in event payload/logs by default; tokenization, strict roles, explicit approval |
 
-## Approval gates
+## Policy by lifecycle
 
-| Gate | Point in flow | Approvers | Artifact submitted |
-|---|---|---|---|
-| **Gate 1** | Silver → Phase 3 | Senior Data Stakeholders, CDO, Product Leadership | Schema, business rules, DQ results, lineage |
-| **Gate 2** | Gold candidate → serving | CDO, Product Leadership | Data product spec, metrics definitions, sample output, lineage |
+| Lifecycle stage | Required governance |
+|---|---|
+| Source onboarding | Owner, lawful purpose, source terms, classification, schema, retention, volume, replay capability |
+| Ingestion | Schema enforcement, identity, encryption, least privilege, rejection path, operational metrics |
+| Bronze | Immutable raw history, restricted access, retention and legal-hold policy |
+| Silver | Quality rules, standard definitions, deduplication, lineage, reproducibility |
+| Gold | Business owner, SLA, approved metric definition, consumer access, versioning |
+| ML/AI | Approved dataset, purpose limitation, evaluation, privacy, human oversight, output monitoring |
 
-Templates and completed approval records live in [`approval-gates/`](approval-gates/).
+## Required artifacts
 
-## Data contracts
-
-Agreements between data producers and the platform: expected schema, delivery frequency, ownership, and what constitutes a breaking change. See [`data-contracts/`](data-contracts/).
-
-Purpose: a producer changing their payload without notice is the single most common cause of silent pipeline breakage. The contract makes that change a violation rather than a surprise.
+- source registration and data contract;
+- classification and threat model;
+- ADRs and architecture diagram;
+- IAM and Lake Formation access matrix;
+- schema compatibility and data-quality results;
+- lineage and reconciliation evidence;
+- retention and deletion policy;
+- SLO dashboard, alerts, and runbook;
+- cost estimate and allocation tags;
+- approval-gate record.

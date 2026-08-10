@@ -1,0 +1,28 @@
+# Phase 1 Failure-Test Plan
+
+| Test | Injection | Expected behavior | Pass evidence |
+|---|---|---|---|
+| Source disconnect | Terminate network/session | Bounded backoff and reconnect; gap identified | Timeline and gap report |
+| Task failure | Stop active ECS task | Service replaces task and restores ingestion | ECS events and recovery time |
+| Invalid payload | Remove required field/change type | Event quarantined; healthy flow continues | Object, metric, and correlation ID |
+| Kinesis partial failure | Stub failed record responses | Retry only failed records | Unit/integration report |
+| Throttling | Constrain/test producer throughput | Backoff; alarm; no retry storm | Metrics and logs |
+| Duplicate delivery | Replay identical `event_id` | Downstream idempotency preserves one result | Reconciliation result |
+| Hot partition | Concentrate partition keys | Alarm and documented re-partition response | Shard/partition metrics |
+| DLQ redrive | Force delivery exhaustion | Message is investigated and safely redriven | Redrive evidence |
+| Secret leak | Commit test secret signature | CI blocks change | Security-job output |
+| IaC drift | Change a controlled setting | Plan/check identifies drift | Plan evidence |
+
+## Reconciliation equation
+
+For a bounded test window:
+
+```text
+events_received
+= events_accepted + events_rejected_before_acceptance
+
+events_accepted
+= events_acknowledged_by_kinesis + events_in_retry_or_dlq
+```
+
+Differences must be explainable by documented source semantics, test-window boundaries, or measured duplicates. “Close enough” is not a pass criterion.
