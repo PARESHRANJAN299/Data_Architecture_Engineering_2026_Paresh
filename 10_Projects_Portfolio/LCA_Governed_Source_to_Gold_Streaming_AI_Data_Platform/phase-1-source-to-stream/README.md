@@ -1,5 +1,7 @@
 # Phase 1 — Governed Source to Stream
 
+**Status:** 🟠 IN PROGRESS
+
 **Goal:** prove that one external real-time source can be connected, contracted, secured, observed, recovered, and delivered to Kinesis without unexplained loss.
 
 ## Selected baseline

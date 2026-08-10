@@ -1,5 +1,9 @@
 # LCA Governed Source-to-Gold Streaming & AI Data Platform
 
+![Project Status](https://img.shields.io/badge/Project_Status-In_Progress-F59E0B?style=for-the-badge)
+
+**Project status:** 🟠 IN PROGRESS — Phase 1 Source to Stream
+
 **Owner and Lead Architect:** Paresh Ranjan Rout
 
 **Portfolio:** Data Architecture & Engineering 2026
@@ -83,11 +87,11 @@ flowchart LR
 
 ## Three delivery phases
 
-| Phase | Outcome | Primary technologies | Exit evidence |
-|---|---|---|---|
-| 1. Source to Stream | Reliable, governed Coinbase trade ingestion | Coinbase Advanced Trade, ECS Fargate, Glue Schema Registry, Kinesis, SQS DLQ, DynamoDB control state, CloudWatch, Terraform | Reconnect, heartbeat, retry, gap reporting, schema compatibility, zero unexplained loss in controlled tests |
-| 2. Bronze to Silver | Immutable raw history and trustworthy datasets | Amazon Data Firehose, S3, Glue, Spark/Flink, Apache Iceberg, Glue Data Quality | Count reconciliation, deterministic deduplication, late-data handling, reproducible reprocessing |
-| 3. Silver to Gold | Governed business value and safe AI consumption | dbt/Glue, Athena, Redshift Serverless, QuickSight, SageMaker, Bedrock, Lake Formation | Approved metrics, lineage, role-based access, query SLOs, evaluated AI outputs |
+| Phase | Status | Outcome | Primary technologies | Exit evidence |
+|---|---|---|---|---|
+| 1. Source to Stream | **🟠 IN PROGRESS** | Reliable, governed Coinbase trade ingestion | Coinbase Advanced Trade, ECS Fargate, Glue Schema Registry, Kinesis, SQS DLQ, DynamoDB control state, CloudWatch, Terraform | Reconnect, heartbeat, retry, gap reporting, schema compatibility, zero unexplained loss in controlled tests |
+| 2. Bronze to Silver | ⚪ PLANNED | Immutable raw history and trustworthy datasets | Amazon Data Firehose, S3, Glue, Spark/Flink, Apache Iceberg, Glue Data Quality | Count reconciliation, deterministic deduplication, late-data handling, reproducible reprocessing |
+| 3. Silver to Gold | ⚪ PLANNED | Governed business value and safe AI consumption | dbt/Glue, Athena, Redshift Serverless, QuickSight, SageMaker, Bedrock, Lake Formation | Approved metrics, lineage, role-based access, query SLOs, evaluated AI outputs |
 
 ## Architecture principles
 
@@ -113,12 +117,14 @@ flowchart LR
 | [`contracts/`](contracts/) | Canonical JSON Schema, sample event, and contract metadata |
 | [`automation/`](automation/) | CI/CD, infrastructure, schema, security, and data-quality automation |
 | [`architecture/`](architecture/) | Presentation-ready architecture, governance, and automation diagrams |
-| [`phase-1-source-to-stream/`](phase-1-source-to-stream/) | The only implementation scope currently authorized |
+| [`phase-1-source-to-stream/`](phase-1-source-to-stream/) | **IN PROGRESS** — active Coinbase source-to-stream implementation |
 | [`docs/presentation/`](docs/presentation/) | Executive and technical architecture deck |
 
 ## Current boundary
 
-Phase 1 is the active build. Phases 2 and 3 are intentionally documented as target-state roadmaps; their implementation starts only after the Phase 1 gate passes.
+**🟠 Status: IN PROGRESS**
+
+Phase 1 is the active build. Coinbase source selection and architecture are complete; adapter implementation and AWS deployment evidence remain in progress. Phases 2 and 3 are intentionally documented as target-state roadmaps, and their implementation starts only after the Phase 1 gate passes.
 
 ## Definition of portfolio quality
 
