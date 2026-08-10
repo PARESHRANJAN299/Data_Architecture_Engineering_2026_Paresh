@@ -61,3 +61,17 @@ Significant architectural and implementation decisions, with the reasoning and t
 **Alternative considered:**
 **Reasoning:**
 **Trade-off accepted:**
+## D-004 — Tokenize identifiers, mask free text (refinement to ADR-001)
+
+**Date:** 10 August 2026
+**Status:** Accepted
+
+**Context:** Building the chat-interaction schema surfaced a distinction ADR-001 didn't originally make: "masking" was used as one blanket term, but two different fields need two different treatments.
+
+**Decision:**
+- `user_id` -> **tokenized** (reversible, KMS-held key)
+- PII found inside free text (`user_question`, `generated_answer`) -> **masked** (irreversible)
+
+**Reasoning:** the platform has a legitimate ongoing need to group interactions by the same user (session analysis, personalization, support lookback) — a one-way mask on `user_id` would silently break that capability. Free text is different: if a user types their email into a chat message, there is no legitimate downstream reason to ever recover that exact string.
+
+**Trade-off accepted:** tokenization requires managing a KMS key and an access policy for who can decrypt (a separate, narrower permission than tokenizing) — more operational surface than a flat mask, accepted because the capability it preserves is required.
