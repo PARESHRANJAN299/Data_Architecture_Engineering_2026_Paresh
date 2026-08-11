@@ -162,6 +162,80 @@ Snapshot 002: part-001.parquet + part-002.parquet + part-003.parquet
 
 Snapshot 002 becomes current only after its commit succeeds. If the write fails before the commit, Snapshot 001 remains current and readers do not see a half-written table version. Retained older snapshots provide time travel and rollback; retention procedures later expire snapshots and remove files that are no longer required.
 
+### As streaming continues, does the same Silver table grow every day?
+
+This was the final implementation-readiness question raised during the review:
+
+> When Coinbase continuously generates streaming data and new objects move into S3, will the same Silver table increase in volume? If tomorrow we run `SELECT MAX(event_date)`, and run it again the following day, should the maximum date advance?
+
+Yes. The logical table name remains stable while each successful incremental load adds rows and commits a new Iceberg snapshot:
+
+```text
+Coinbase streaming events
+    ↓ continuously
+Kinesis records
+    ↓
+Firehose buffers records by time or size
+    ↓ periodically
+New immutable Bronze S3 objects
+    ↓
+Incremental Glue/Spark job processes only unprocessed input
+    ↓
+New Silver Parquet files
+    ↓
+New Iceberg snapshot and updated manifests are committed
+    ↓
+silver.fact_market_trade contains more committed rows
+```
+
+An example across three days:
+
+```text
+Snapshot 001
+2026-08-11 → 1,000,000 rows
+MAX(event_date) = 2026-08-11
+
+Snapshot 002
+2026-08-11 → 1,000,000 rows
+2026-08-12 → 1,200,000 rows
+MAX(event_date) = 2026-08-12
+
+Snapshot 003 — current
+2026-08-11 → 1,000,000 rows
+2026-08-12 → 1,200,000 rows
+2026-08-13 → 1,100,000 rows
+MAX(event_date) = 2026-08-13
+```
+
+The table remains:
+
+```text
+silver.fact_market_trade
+```
+
+Internally, the successful loads normally create new Parquet files, a new snapshot and updated manifest information. Athena/Spark resolves those objects through Iceberg and returns them as one larger logical table.
+
+New source data is not visible in Silver at the exact moment Coinbase generates it. Visibility requires four successful stages:
+
+1. Kinesis accepts the record.
+2. Firehose flushes the buffered records into Bronze.
+3. Glue/Spark processes the relevant new Bronze objects.
+4. Iceberg atomically commits the new snapshot.
+
+Freshness should be monitored using both business-event time and platform-ingestion time:
+
+```sql
+SELECT
+    MAX(source_event_time) AS latest_source_event,
+    MAX(ingestion_time) AS latest_ingested_event
+FROM silver.fact_market_trade;
+```
+
+- `source_event_time` shows when Coinbase generated the newest committed trade.
+- `ingestion_time` shows when the platform received the newest committed record.
+
+The maximum event date normally advances as newer events are committed. It may temporarily remain unchanged during quiet source periods, processing delay, a failed job or when only late-arriving events from an older date are processed. This is why both timestamps and pipeline-lag monitoring are required.
+
 ### Why not use CSV to obtain one file?
 
 CSV objects in S3 also do not solve continuous append. CSV additionally loses strong typing, column pruning and efficient compression. Silver therefore uses Iceberg with Parquet; a single CSV can be generated later only as an export.

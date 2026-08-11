@@ -223,3 +223,36 @@ The precise relationship is:
 > **The snapshot is the table version. It points to a manifest list, and the manifests describe the exact physical-file state represented by that snapshot.**
 
 When an append, update, delete, merge or compaction succeeds, Iceberg commits a new snapshot atomically. A failed operation does not replace the current snapshot, so readers never see a half-completed table version. Older snapshots also enable time travel and rollback until they are expired by the retention policy.
+
+### Does the same Silver table continue growing every day?
+
+**Question asked:** As Coinbase continuously generates streaming data and new objects move into S3, will the same Silver table increase in volume and will its maximum date advance every day?
+
+Yes—after each successful incremental processing cycle, the same logical table contains more committed rows:
+
+```text
+Coinbase events
+    → Kinesis records
+    → Firehose-buffered Bronze objects
+    → incremental Glue/Spark processing
+    → new Silver Parquet files
+    → new Iceberg snapshot and updated manifests
+    → the same logical table contains more rows
+```
+
+```text
+Snapshot 001 → data through 2026-08-11
+Snapshot 002 → data through 2026-08-12
+Snapshot 003 → data through 2026-08-13 — current
+```
+
+The table name remains `silver.fact_market_trade`. Athena normally reads its current committed snapshot, so `MAX(event_date)` advances when a newer event date has been successfully processed and committed.
+
+```sql
+SELECT
+    MAX(source_event_time) AS latest_source_event,
+    MAX(ingestion_time) AS latest_ingested_event
+FROM silver.fact_market_trade;
+```
+
+The two timestamps distinguish when Coinbase generated the newest trade from when the platform received it. New data is visible in Silver only after Firehose flushes Bronze, Glue/Spark processes the new objects and Iceberg successfully commits the next snapshot.
