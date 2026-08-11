@@ -87,6 +87,24 @@ flowchart LR
 | Silver | Validated, standardized, deduplicated | Rebuildable from Bronze | Data engineers and approved analysts |
 | Gold | Approved business metrics and features | Versioned data product | BI, applications, ML/AI consumers |
 
+## Silver Iceberg logical-table backend
+
+![Iceberg logical-table backend](../architecture/iceberg-logical-table-backend.svg)
+
+For each approved Silver dataset, Glue/Spark reads all new objects from the matching Bronze prefix and commits standardized rows to one Iceberg table. For example, many Coinbase `market_trades` batch objects become the single logical table `silver.fact_market_trade`.
+
+The table is resolved in this order:
+
+```text
+Athena / Spark
+    → AWS Glue Data Catalog table entry
+    → current Iceberg metadata JSON
+    → snapshot and manifest files
+    → physical Parquet data files in S3
+```
+
+The number of Bronze batch objects does not determine the number of Silver tables. Dataset ownership and schema determine the tables. An Iceberg table remains one logical dataset even though continuous appends create multiple physical Parquet files managed by its metadata and periodically optimized through compaction.
+
 ## Trust boundaries
 
 - The public internet terminates at the source adapter's outbound connection; no public inbound listener is required for ingestion.

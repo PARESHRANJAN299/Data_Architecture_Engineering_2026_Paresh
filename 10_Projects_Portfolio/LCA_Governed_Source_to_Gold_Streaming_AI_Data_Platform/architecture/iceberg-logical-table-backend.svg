@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Apache Iceberg logical table backend on AWS</title>
+  <desc id="desc">Bronze JSON batch files are transformed by Glue Spark into one logical Silver Iceberg table. Glue Catalog points to Iceberg metadata, which tracks snapshots, manifests, and multiple Parquet data files read by Athena and Spark.</desc>
+  <defs>
+    <marker id="arrow-orange" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#ff9900"/>
+    </marker>
+    <marker id="arrow-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#18bfa3"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#3b82f6"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#102233" flood-opacity="0.12"/>
+    </filter>
+    <style>
+      .title { font: 700 48px Arial, sans-serif; fill: #102233; }
+      .subtitle { font: 400 23px Arial, sans-serif; fill: #60758a; }
+      .section { font: 700 19px Arial, sans-serif; letter-spacing: 1.2px; }
+      .box-title { font: 700 24px Arial, sans-serif; fill: #102233; }
+      .box-text { font: 400 18px Arial, sans-serif; fill: #31485c; }
+      .small { font: 400 15px Arial, sans-serif; fill: #60758a; }
+      .code { font: 700 18px 'Courier New', monospace; fill: #102233; }
+      .white { fill: #ffffff; }
+      .center { text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="#f7fafc"/>
+  <rect x="0" y="0" width="18" height="900" fill="#ff9900"/>
+  <text x="70" y="82" class="title">How Iceberg Creates One Logical Silver Table</text>
+  <text x="72" y="124" class="subtitle">Glue Catalog stores the table entry; Iceberg metadata tracks the physical Parquet files in S3.</text>
+
+  <text x="72" y="186" class="section" fill="#e95d72">BRONZE — MANY RAW OBJECTS</text>
+  <g filter="url(#shadow)">
+    <rect x="70" y="215" width="315" height="225" rx="22" fill="#ffffff" stroke="#cad7e1" stroke-width="2"/>
+  </g>
+  <text x="227" y="257" class="box-title center">S3 Bronze prefix</text>
+  <text x="227" y="289" class="small center">source=coinbase / hour=10</text>
+  <g>
+    <rect x="110" y="315" width="235" height="30" rx="7" fill="#fde1e6" stroke="#e95d72"/>
+    <text x="227" y="336" class="code center">batch-001.json.gz</text>
+    <rect x="110" y="354" width="235" height="30" rx="7" fill="#fde1e6" stroke="#e95d72"/>
+    <text x="227" y="375" class="code center">batch-002.json.gz</text>
+    <rect x="110" y="393" width="235" height="30" rx="7" fill="#fde1e6" stroke="#e95d72"/>
+    <text x="227" y="414" class="code center">batch-010.json.gz</text>
+  </g>
+
+  <line x1="405" y1="327" x2="515" y2="327" stroke="#ff9900" stroke-width="8" marker-end="url(#arrow-orange)"/>
+  <text x="458" y="305" class="small center">read prefix</text>
+
+  <g filter="url(#shadow)">
+    <rect x="540" y="238" width="315" height="178" rx="22" fill="#ffd08a" stroke="#ff9900" stroke-width="2"/>
+  </g>
+  <text x="697" y="285" class="box-title center">AWS Glue / Spark</text>
+  <text x="697" y="323" class="box-text center">Read all new Bronze objects</text>
+  <text x="697" y="352" class="box-text center">explode · standardize · validate</text>
+  <text x="697" y="381" class="box-text center">write an Iceberg transaction</text>
+
+  <line x1="875" y1="327" x2="985" y2="327" stroke="#18bfa3" stroke-width="8" marker-end="url(#arrow-teal)"/>
+  <text x="930" y="305" class="small center">append rows</text>
+
+  <text x="1010" y="186" class="section" fill="#17866e">SILVER — ONE LOGICAL TABLE</text>
+  <g filter="url(#shadow)">
+    <rect x="1010" y="215" width="515" height="225" rx="22" fill="#c9f2e8" stroke="#18bfa3" stroke-width="3"/>
+  </g>
+  <text x="1267" y="268" class="box-title center">silver.fact_market_trade</text>
+  <text x="1267" y="306" class="box-text center">Apache Iceberg table</text>
+  <line x1="1060" y1="332" x2="1475" y2="332" stroke="#18bfa3" stroke-width="2"/>
+  <text x="1267" y="368" class="box-text center">One table name · one schema · one current snapshot</text>
+  <text x="1267" y="401" class="small center">Queried as a table—not as individual S3 files</text>
+
+  <line x1="1267" y1="458" x2="1267" y2="518" stroke="#3b82f6" stroke-width="7" marker-end="url(#arrow-blue)"/>
+  <text x="1290" y="493" class="small">register current metadata location</text>
+
+  <g filter="url(#shadow)">
+    <rect x="1030" y="535" width="475" height="105" rx="18" fill="#d7e6ff" stroke="#3b82f6" stroke-width="2"/>
+  </g>
+  <text x="1267" y="578" class="box-title center">AWS Glue Data Catalog</text>
+  <text x="1267" y="610" class="code center">silver.fact_market_trade</text>
+
+  <line x1="1010" y1="587" x2="865" y2="587" stroke="#3b82f6" stroke-width="7" marker-end="url(#arrow-blue)"/>
+  <text x="940" y="567" class="small center">points to</text>
+
+  <g filter="url(#shadow)">
+    <rect x="520" y="515" width="320" height="145" rx="18" fill="#ffffff" stroke="#3b82f6" stroke-width="2"/>
+  </g>
+  <text x="680" y="555" class="box-title center">Iceberg metadata</text>
+  <text x="680" y="588" class="code center">metadata-v3.json</text>
+  <text x="680" y="620" class="small center">schema · partitions · current snapshot</text>
+
+  <line x1="500" y1="588" x2="390" y2="588" stroke="#3b82f6" stroke-width="7" marker-end="url(#arrow-blue)"/>
+  <text x="448" y="567" class="small center">tracks</text>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="500" width="295" height="175" rx="18" fill="#ffffff" stroke="#8398aa" stroke-width="2"/>
+  </g>
+  <text x="217" y="540" class="box-title center">Snapshot + manifests</text>
+  <text x="217" y="576" class="code center">snapshot-003</text>
+  <text x="217" y="609" class="small center">manifest-list.avro</text>
+  <text x="217" y="636" class="small center">manifest-001.avro</text>
+
+  <line x1="217" y1="692" x2="217" y2="735" stroke="#8398aa" stroke-width="6" marker-end="url(#arrow-blue)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="750" width="1060" height="105" rx="18" fill="#ffffff" stroke="#cad7e1" stroke-width="2"/>
+  </g>
+  <text x="100" y="785" class="box-title">Physical Parquet objects in S3</text>
+  <rect x="100" y="802" width="285" height="32" rx="7" fill="#eef4ff" stroke="#3b82f6"/>
+  <text x="242" y="824" class="code center">trade-001.parquet</text>
+  <rect x="405" y="802" width="285" height="32" rx="7" fill="#eef4ff" stroke="#3b82f6"/>
+  <text x="547" y="824" class="code center">trade-002.parquet</text>
+  <rect x="710" y="802" width="285" height="32" rx="7" fill="#eef4ff" stroke="#3b82f6"/>
+  <text x="852" y="824" class="code center">trade-003.parquet</text>
+
+  <g filter="url(#shadow)">
+    <rect x="1170" y="710" width="355" height="145" rx="18" fill="#102d42" stroke="#102d42"/>
+  </g>
+  <text x="1347" y="753" class="box-title white center">Athena / Spark</text>
+  <text x="1347" y="790" class="code white center">SELECT * FROM</text>
+  <text x="1347" y="821" class="code white center">silver.fact_market_trade</text>
+  <path d="M1347 690 C1347 665, 1267 675, 1267 655" fill="none" stroke="#18bfa3" stroke-width="6" marker-end="url(#arrow-teal)"/>
+
+  <rect x="425" y="705" width="655" height="32" rx="16" fill="#102d42"/>
+  <text x="752" y="728" class="section white center">ONE LOGICAL TABLE · MULTIPLE MANAGED DATA FILES</text>
+</svg>

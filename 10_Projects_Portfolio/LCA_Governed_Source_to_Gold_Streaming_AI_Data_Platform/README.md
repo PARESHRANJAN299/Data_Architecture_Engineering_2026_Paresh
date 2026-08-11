@@ -84,6 +84,11 @@ flowchart LR
 | Phase 1 source-to-stream flow | [Open PNG](architecture/phase-1-source-to-stream.png) |
 | Governance control plane | [Open PNG](architecture/governance-control-plane.png) |
 | Automated delivery flow | [Open PNG](architecture/automated-delivery-flow.png) |
+| Iceberg logical-table backend | [Open SVG](architecture/iceberg-logical-table-backend.svg) |
+
+### Iceberg logical-table backend
+
+![How Iceberg creates one logical Silver table](architecture/iceberg-logical-table-backend.svg)
 
 ## Three delivery phases
 
