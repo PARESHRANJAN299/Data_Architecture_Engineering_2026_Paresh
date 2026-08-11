@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="860" viewBox="0 0 1600 860" role="img" aria-labelledby="title desc">
+  <title id="title">Kinesis configuration completion and architecture interview readiness</title>
+  <desc id="desc">Completed Kinesis configuration controls, remaining data delivery boundary, and three architecture interview modes.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12 Z" fill="#2878d0"/></marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="7" flood-opacity=".12"/></filter>
+    <style>
+      .title{font:700 42px Arial,sans-serif;fill:#102a43}.sub{font:23px Arial,sans-serif;fill:#526b82}.h{font:700 25px Arial,sans-serif;fill:#102a43}.b{font:20px Arial,sans-serif;fill:#334e68}.small{font:17px Arial,sans-serif;fill:#526b82}.white{fill:#fff}.center{text-anchor:middle}.card{fill:#fff;stroke:#bcccdc;stroke-width:2;rx:18;filter:url(#shadow)}
+    </style>
+  </defs>
+  <rect width="1600" height="860" fill="#f4f8fb"/><rect width="1600" height="14" fill="#ff9900"/>
+  <text x="75" y="76" class="title">Kinesis Configuration Complete | Delivery Still In Progress</text>
+  <text x="75" y="116" class="sub">A service is configured only when its controls are set; a pipeline is complete only after data-flow tests pass.</text>
+
+  <rect x="75" y="165" width="675" height="320" class="card"/>
+  <rect x="75" y="165" width="675" height="62" rx="18" fill="#087f5b"/>
+  <text x="412" y="206" class="h white center">KINESIS RESOURCE CONFIGURATION — COMPLETE</text>
+  <text x="115" y="267" class="b">✓ Stream status: Active</text>
+  <text x="115" y="307" class="b">✓ Provisioned capacity: 1 shard</text>
+  <text x="115" y="347" class="b">✓ Retention: rolling 24 hours per record</text>
+  <text x="115" y="387" class="b">✓ Maximum record size: 1024 KiB</text>
+  <text x="115" y="427" class="b">✓ Encryption: AWS-managed KMS key aws/kinesis</text>
+  <text x="115" y="462" class="small">Enhanced shard metrics remain intentionally disabled until traffic exists.</text>
+
+  <path d="M750 325 H850" stroke="#2878d0" stroke-width="8" marker-end="url(#arrow)"/>
+  <rect x="870" y="165" width="655" height="320" class="card"/>
+  <rect x="870" y="165" width="655" height="62" rx="18" fill="#d97706"/>
+  <text x="1197" y="206" class="h white center">END-TO-END DELIVERY — NOT COMPLETE</text>
+  <text x="910" y="267" class="b">1. Create ECS task and execution roles</text>
+  <text x="910" y="307" class="b">2. Deploy the Coinbase adapter</text>
+  <text x="910" y="347" class="b">3. Write unchanged records into Kinesis</text>
+  <text x="910" y="387" class="b">4. Test retries, throttling and replay</text>
+  <text x="910" y="427" class="b">5. Reconcile source, accepted and failed counts</text>
+  <text x="910" y="462" class="small">Completion requires operational evidence—not console settings alone.</text>
+
+  <text x="75" y="560" class="h">Architecture interview practice — always three modes</text>
+  <rect x="75" y="600" width="450" height="190" rx="18" fill="#e8f1fb" stroke="#78a9dc" stroke-width="2"/>
+  <text x="300" y="646" class="h center">1 · Beginner</text>
+  <text x="300" y="686" class="b center">Explain service purpose and terms</text>
+  <text x="300" y="724" class="small center">shard · retention · KMS · Firehose</text>
+  <text x="300" y="758" class="small center">Goal: explain clearly without jargon</text>
+
+  <rect x="575" y="600" width="450" height="190" rx="18" fill="#f1ebff" stroke="#8a68c7" stroke-width="2"/>
+  <text x="800" y="646" class="h center">2 · Medium</text>
+  <text x="800" y="686" class="b center">Evaluate design trade-offs</text>
+  <text x="800" y="724" class="small center">partitioning · scale · replay · cost</text>
+  <text x="800" y="758" class="small center">Goal: justify the chosen configuration</text>
+
+  <rect x="1075" y="600" width="450" height="190" rx="18" fill="#e6f6f2" stroke="#35b69f" stroke-width="2"/>
+  <text x="1300" y="646" class="h center">3 · Scenario</text>
+  <text x="1300" y="686" class="b center">Defend a company-scale architecture</text>
+  <text x="1300" y="724" class="small center">Netflix-like · LinkedIn-like · retail · SaaS</text>
+  <text x="1300" y="758" class="small center">Goal: requirements → decisions → proof</text>
+
+  <text x="75" y="830" class="small">Company names describe interview-scale scenarios only; they do not claim those companies use this exact architecture.</text>
+</svg>

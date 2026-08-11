@@ -14,7 +14,7 @@ Coinbase creates live market messages. A future ECS adapter will maintain the We
 
 ![First manually configured AWS service](../architecture/manual-kinesis-first-service.svg)
 
-## Step 1 — Kinesis stream created
+## Steps 1–2 — Kinesis resource configuration completed
 
 | Setting | Manual selection | Meaning |
 |---|---|---|
@@ -26,6 +26,8 @@ Coinbase creates live market messages. A future ECS adapter will maintain the We
 | Shared read capacity | up to 2 MiB/second | Shared among standard consumers |
 | Retention | 1 day | Each record remains available for 24 hours after arrival |
 | Maximum record size | 1024 KiB | More than sufficient for expected Coinbase messages |
+| Server-side encryption | Enabled with AWS-managed `aws/kinesis` | Kinesis encrypts future records at rest using AWS KMS |
+| Enhanced shard metrics | Disabled for now | Basic monitoring is sufficient until producer traffic exists |
 | Status observed | Active | The AWS stream resource exists and can accept permitted writes |
 
 ### One-shard theory
@@ -54,9 +56,12 @@ Evidence: [`manual-kinesis-stream-creation.json`](../phase-1-source-to-stream/ev
 
 - ✅ The named Kinesis stream was observed as `ACTIVE` in `us-east-1`.
 - ✅ Provisioned mode, one shard, 24-hour retention and 1024-KiB record maximum were observed.
+- ✅ Server-side encryption was successfully updated using the AWS-managed KMS key `aws/kinesis`.
+- ✅ Kinesis **resource configuration** is complete for the current development scope.
 - ⬜ No Coinbase producer has written to the stream yet.
 - ⬜ No Firehose, S3 Bronze delivery or end-to-end reconciliation has been tested.
-- ⬜ Server-side encryption was disabled at creation and must be enabled before producer deployment.
+
+This does **not** mean the Kinesis data-delivery implementation is complete. Completion of delivery requires the ECS producer, successful writes, retry/throttle/replay tests and source-to-Kinesis count reconciliation.
 
 The supplied console screenshots contained the AWS account identifier and full resource ARN. They are intentionally not published. The architecture SVGs and redacted JSON retain the useful configuration evidence without exposing account identifiers.
 
@@ -65,8 +70,8 @@ The supplied console screenshots contained the AWS account identifier and full r
 | Step | Deliverable | Status | Required test or evidence |
 |---:|---|---|---|
 | 1 | Create Kinesis data stream | ✅ ACHIEVED & VERIFIED | Stream observed `ACTIVE`; redacted configuration evidence committed |
-| 2 | Enable Kinesis server-side encryption | 🟠 NEXT | Configuration shows encryption enabled and stream returns to `ACTIVE` |
-| 3 | Create least-privilege ECS task and execution roles | ⬜ NOT STARTED | IAM trust policies and policy simulator/access test |
+| 2 | Enable Kinesis server-side encryption | ✅ ACHIEVED & VERIFIED | Success confirmation observed; AWS-managed `aws/kinesis` selected |
+| 3 | Create least-privilege ECS task and execution roles | 🟠 NEXT | IAM trust policies and policy simulator/access test |
 | 4 | Create ECS runtime for the Coinbase adapter | ⬜ NOT STARTED | Healthy task and CloudWatch logs |
 | 5 | Prove Coinbase → ECS → Kinesis delivery | ⬜ NOT STARTED | Record counts, timestamps and unchanged JSON sample evidence |
 | 6 | Create Firehose and S3 Bronze delivery | ⬜ NOT STARTED | Buffered `JSON.GZIP` objects plus count reconciliation |
@@ -74,6 +79,12 @@ The supplied console screenshots contained the AWS account identifier and full r
 ## Governance note
 
 The first stream was created during a root-console learning session. Root MFA is enabled, but routine root use remains a temporary governance exception. The deployed application will use an ECS task role with least-privilege access; no AWS keys will be stored in application code or GitHub.
+
+## Architecture interview preparation
+
+The completed Kinesis and KMS controls are converted into Beginner, Medium and Company-scale Scenario interview practice in [`08-kinesis-kms-architecture-interview-guide.md`](08-kinesis-kms-architecture-interview-guide.md).
+
+![Kinesis completion and interview readiness](../architecture/kinesis-configuration-interview-readiness.svg)
 
 ## AWS references
 

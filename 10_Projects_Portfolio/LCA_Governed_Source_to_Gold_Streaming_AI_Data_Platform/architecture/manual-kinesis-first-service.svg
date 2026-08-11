@@ -52,7 +52,7 @@
   <rect x="970" y="465" width="300" height="172" rx="20" fill="#6b45bc"/>
   <text x="1120" y="518" class="h white center">Kinesis stream</text>
   <text x="1120" y="560" class="b white center">buffers ordered records</text>
-  <text x="1120" y="600" class="b white center">CREATED + ACTIVE</text>
+  <text x="1120" y="600" class="b white center">ACTIVE + ENCRYPTED</text>
 
   <path d="M1270 551 H1370" stroke="#2878d0" stroke-width="8" marker-end="url(#arrow)"/>
   <rect x="1390" y="480" width="150" height="142" rx="20" fill="#e6f6f2" stroke="#35b69f" stroke-width="2"/>
@@ -63,5 +63,5 @@
   <rect x="80" y="700" width="1440" height="128" rx="18" fill="#102a43"/>
   <text x="120" y="748" class="h white">Verified now</text>
   <text x="120" y="786" class="b white">The transport service exists. No producer records or end-to-end delivery have been verified.</text>
-  <text x="120" y="817" class="small white">Next control: enable Kinesis server-side encryption, then create the ECS task role and producer.</text>
+  <text x="120" y="817" class="small white">Next implementation boundary: create least-privilege ECS roles, deploy the adapter and prove record delivery.</text>
 </svg>

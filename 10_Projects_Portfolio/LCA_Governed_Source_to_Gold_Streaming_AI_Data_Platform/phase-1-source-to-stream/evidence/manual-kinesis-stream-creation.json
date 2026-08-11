@@ -11,7 +11,11 @@
     "retention_hours": 24,
     "maximum_record_size_kib": 1024,
     "server_side_encryption_at_creation": "DISABLED",
+    "server_side_encryption_current": "ENABLED",
+    "kms_key_ownership": "AWS_MANAGED",
+    "kms_key_alias": "aws/kinesis",
     "enhanced_metrics_at_creation": "DISABLED",
+    "enhanced_metrics_current": "DISABLED",
     "sharing_policy_at_creation": "NONE"
   },
   "capacity_theory": {
@@ -23,6 +27,8 @@
   "retention_theory": "Each record remains readable for 24 hours from its arrival, then expires from Kinesis. Future S3 Bronze retention is independent.",
   "verification": {
     "stream_created_and_active": true,
+    "encryption_update_success_observed": true,
+    "kinesis_resource_configuration_completed": true,
     "producer_delivery_tested": false,
     "firehose_delivery_tested": false,
     "s3_bronze_delivery_tested": false
@@ -32,5 +38,6 @@
     "root_console_session_used": true,
     "governance_exception": "Root use was selected by the project owner for manual learning. It is documented as a temporary exception and is not the target operating model."
   },
-  "next_control": "Enable Kinesis server-side encryption, then create least-privilege ECS task and execution roles."
+  "completion_boundary": "Kinesis resource configuration is complete. End-to-end Kinesis delivery is incomplete until the producer, operational tests and reconciliation pass.",
+  "next_control": "Create least-privilege ECS task and execution roles."
 }
