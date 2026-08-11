@@ -121,6 +121,47 @@ The S3 prefix reveals that all five objects exist. The current Iceberg manifests
 
 `snapshot-003` in the architecture diagram represents a snapshot ID/version; it is not intended to mean that a physical file must literally be named `snapshot-003`.
 
+### What is a snapshot, and does the manifest capture it?
+
+This was the follow-up question raised during the review:
+
+> Is a snapshot the saved state of the table, and does the Iceberg manifest capture that snapshot?
+
+A snapshot is an immutable, committed version of an Iceberg table at a particular moment. It does not contain data rows and does not create another copy of the Parquet files. A snapshot records information such as:
+
+- a unique snapshot ID and commit timestamp;
+- its parent snapshot, when one exists;
+- the completed operation, such as append, update, delete, merge or compaction;
+- commit-summary counts; and
+- the location of the manifest list belonging to that table version.
+
+The direction of the relationship is important:
+
+```text
+Iceberg metadata JSON
+    → selects current Snapshot 003
+    → Snapshot 003 points to manifest-list-003.avro
+    → manifest list selects manifest-001.avro and manifest-002.avro
+    → manifests identify the exact active Parquet files
+    → Parquet files contain the actual rows
+```
+
+Therefore, it is more precise to say:
+
+> **The snapshot is the table version. It points to a manifest list, and the manifests describe the exact physical-file state represented by that snapshot.**
+
+For example:
+
+```text
+Snapshot 001: part-001.parquet + part-002.parquet
+
+New data is appended successfully.
+
+Snapshot 002: part-001.parquet + part-002.parquet + part-003.parquet
+```
+
+Snapshot 002 becomes current only after its commit succeeds. If the write fails before the commit, Snapshot 001 remains current and readers do not see a half-written table version. Retained older snapshots provide time travel and rollback; retention procedures later expire snapshots and remove files that are no longer required.
+
 ### Why not use CSV to obtain one file?
 
 CSV objects in S3 also do not solve continuous append. CSV additionally loses strong typing, column pruning and efficient compression. Silver therefore uses Iceberg with Parquet; a single CSV can be generated later only as an export.

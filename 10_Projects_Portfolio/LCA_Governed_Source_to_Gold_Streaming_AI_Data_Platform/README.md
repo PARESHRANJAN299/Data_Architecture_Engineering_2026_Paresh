@@ -204,3 +204,22 @@ Athena/Spark query
     → manifests: select the exact active Parquet files
     → Parquet files: read the actual rows
 ```
+
+### What is an Iceberg snapshot?
+
+**Question asked:** Does the Iceberg manifest capture the snapshot?
+
+A snapshot is an immutable, committed version of the logical table at a particular moment. It does not contain the data rows and does not copy the Parquet files. It records the table operation, timestamp, parent snapshot and the location of its manifest list.
+
+```text
+Snapshot 003 — the committed table version
+    → manifest-list-003.avro — manifests used by this version
+    → manifest-001.avro and manifest-002.avro — file indexes
+    → part-001.parquet, part-002.parquet, part-003.parquet — actual rows
+```
+
+The precise relationship is:
+
+> **The snapshot is the table version. It points to a manifest list, and the manifests describe the exact physical-file state represented by that snapshot.**
+
+When an append, update, delete, merge or compaction succeeds, Iceberg commits a new snapshot atomically. A failed operation does not replace the current snapshot, so readers never see a half-completed table version. Older snapshots also enable time travel and rollback until they are expired by the retention policy.
