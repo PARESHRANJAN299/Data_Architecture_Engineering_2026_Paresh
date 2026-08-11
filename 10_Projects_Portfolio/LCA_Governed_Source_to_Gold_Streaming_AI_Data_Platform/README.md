@@ -132,7 +132,7 @@ flowchart LR
 
 **🔒 Source locked:** Coinbase Advanced Trade public WebSocket using `market_trades` and `heartbeats` for `BTC-USD` and `ETH-USD`.
 
-Phase 1 is the active build. Source selection, raw-transport architecture, governance baseline, source contract, and target Silver mapping are complete and repository-validated. Live Coinbase connectivity, adapter runtime, AWS infrastructure, deployment, and operational evidence have not yet passed their tests. Phases 2 and 3 remain target-state roadmaps until the Phase 1 gate passes.
+Phase 1 is the active build. Source selection, raw-transport architecture, governance baseline, source contract, target Silver mapping, live Coinbase connectivity and the containerized local adapter are complete and repository-validated. Kinesis delivery, AWS infrastructure, deployment and production-scale operational evidence have not yet passed their tests. Phases 2 and 3 remain target-state roadmaps until the Phase 1 gate passes.
 
 ## Phase 1 execution tracker
 
@@ -148,9 +148,9 @@ Phase 1 is the active build. Source selection, raw-transport architecture, gover
 | 2 | Coinbase source decision | ✅ ACHIEVED & VERIFIED — **LOCKED** | ADR-004 accepted; endpoint, channels and products documented from official sources |
 | 3 | Target architecture, governance controls and AWS service decisions | ✅ ACHIEVED & VERIFIED | ADR set, control matrix, diagrams and presentation structural checks passed |
 | 4 | Raw Coinbase transport contract and target Silver mapping | ✅ ACHIEVED & VERIFIED — design baseline | JSON/YAML parse checks passed; raw-payload and live-fixture validation remain Step 5 |
-| 5 | Local Coinbase connectivity spike and captured fixtures | 🟠 **NEXT STEP** | Must prove subscribe, heartbeat, multi-trade parsing, reconnect and safe fixture capture |
-| 6 | Containerized local source adapter | ⬜ NOT STARTED | Unit, contract and container smoke tests required |
-| 7 | Kinesis producer and reconciliation consumer | ⬜ NOT STARTED | Local/AWS integration, partial-failure, duplicate and replay tests required |
+| 5 | Local Coinbase connectivity spike and sanitized fixtures | ✅ **ACHIEVED & VERIFIED** | 20 live market messages containing 230 trades, 10 heartbeats, both products, 0 sequence gaps and 0 quarantine; summary/hash committed without payloads |
+| 6 | Containerized local source adapter | ✅ **ACHIEVED & VERIFIED** | 12 unit/contract tests passed; non-root UID `10001`; bounded live container smoke test passed |
+| 7 | Kinesis producer and reconciliation consumer | 🟠 **NEXT STEP** | Local/AWS integration, partial-failure, duplicate and replay tests required |
 | 8 | Terraform AWS foundation | ⬜ NOT STARTED | Format, validate, security scan, plan and clean-environment deployment required |
 | 9 | ECS deployment, contracts, quarantine, DLQ and control state | ⬜ NOT STARTED | End-to-end source-to-Kinesis reconciliation and redrive tests required |
 | 10 | Observability, security, recovery and cost evidence | ⬜ NOT STARTED | Alarms, failure injection, runbooks, access tests and unit-cost report required |
@@ -158,12 +158,12 @@ Phase 1 is the active build. Source selection, raw-transport architecture, gover
 
 ### Immediate next steps
 
-1. Create the local adapter and test directory structure.
-2. Connect to Coinbase and subscribe to both locked channels.
-3. Capture sanitized fixtures for heartbeat, single-trade and multi-trade messages.
-4. Prove the Coinbase message is passed unchanged into the raw transport record; preserve `price` and `size` exactly as source strings.
-5. Add reconnect, stale-heartbeat, duplicate, malformed-message and sequence-discontinuity tests.
-6. Containerize and pass the local smoke test before creating AWS resources.
+1. Implement the Kinesis sink behind the tested raw-message interface.
+2. Batch writes while preserving one unchanged Coinbase message per Kinesis record.
+3. Retry only failed `PutRecords` entries with capped exponential backoff and jitter.
+4. Add a reconciliation consumer and prove accepted, acknowledged, retried and failed counts balance.
+5. Add local stub tests before provisioning any AWS resource.
+6. Define the Terraform Kinesis/IAM/KMS foundation and review its plan before deployment.
 
 The detailed implementation order and definition of done are maintained in [`phase-1-source-to-stream/README.md`](phase-1-source-to-stream/README.md).
 

@@ -1,0 +1,53 @@
+{
+  "evidence_version": "1.0.0",
+  "captured_at_utc": "2026-08-11T12:40:34Z",
+  "scope": "Phase 1 local Coinbase connectivity and containerized adapter",
+  "source": {
+    "endpoint": "wss://advanced-trade-ws.coinbase.com",
+    "channels": [
+      "market_trades",
+      "heartbeats"
+    ],
+    "products": [
+      "BTC-USD",
+      "ETH-USD"
+    ]
+  },
+  "automated_tests": {
+    "command": "PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -v",
+    "tests_run": 12,
+    "failures": 0,
+    "errors": 0,
+    "result": "passed"
+  },
+  "bounded_live_capture": {
+    "market_messages": 20,
+    "trade_rows_inside_source_messages": 230,
+    "event_groups": 20,
+    "heartbeats_observed": 10,
+    "unsupported_control_messages": 2,
+    "first_sequence_num": 0,
+    "last_sequence_num": 31,
+    "sequence_gaps": 0,
+    "out_of_order_messages": 0,
+    "price_source_type": "string",
+    "size_source_type": "string",
+    "quarantined_messages": 0,
+    "raw_capture_committed": false,
+    "temporary_capture_sha256": "ffe41f960541e4ff7668144983581a70ac443cf3f8a0b5b6c81603840e05cba5",
+    "result": "passed"
+  },
+  "container_smoke_test": {
+    "image": "lca-coinbase-adapter:phase1-local",
+    "runs_as_root": false,
+    "market_messages": 2,
+    "quarantined_messages": 0,
+    "exit_code": 0,
+    "result": "passed"
+  },
+  "claims_not_made": [
+    "AWS Kinesis delivery is not implemented or tested yet",
+    "long-running reconnect and stale-heartbeat behavior is not yet live failure-tested",
+    "this bounded sample does not prove zero loss at production volume"
+  ]
+}

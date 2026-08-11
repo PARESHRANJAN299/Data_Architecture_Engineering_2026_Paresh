@@ -31,9 +31,9 @@ Infrastructure       → Terraform + CI/CD
 |---:|---|---|---|
 | 1 | Confirm Coinbase terms, endpoint, channels, products, rate limits and recovery limits | ✅ ACHIEVED | ADR-004, source specification and authoritative references |
 | 2 | Finalize raw transport rules and target Silver mapping | ✅ ACHIEVED | JSON/YAML checks and reviewed mapping specification |
-| 3 | Connect locally and capture sanitized source fixtures | 🟠 NEXT | Heartbeat, single-trade and multi-trade fixtures plus connection log |
-| 4 | Build and containerize the source adapter | ⬜ NOT STARTED | Unit, contract and container smoke tests |
-| 5 | Add Kinesis batching, partial-failure retry, backoff and metrics | ⬜ NOT STARTED | Integration and reconciliation report |
+| 3 | Connect locally and capture sanitized source fixtures | ✅ ACHIEVED | Curated fixtures plus bounded live capture: 20 market messages, 230 trades, 10 heartbeats, both products, 0 gaps/quarantine |
+| 4 | Build and containerize the source adapter | ✅ ACHIEVED | 12 unit/contract tests, raw-preservation proof, non-root image and live container smoke test |
+| 5 | Add Kinesis batching, partial-failure retry, backoff and metrics | 🟠 NEXT | Integration and reconciliation report |
 | 6 | Provision the AWS environment through Terraform | ⬜ NOT STARTED | Validated plan, security scan and deployment evidence |
 | 7 | Add quarantine, DLQ, IAM, KMS, DynamoDB, CloudWatch and CloudTrail | ⬜ NOT STARTED | Access, redrive, alarm and audit evidence |
 | 8 | Execute load, reconnect, gap, duplicate, throttle and task-failure tests | ⬜ NOT STARTED | Failure-test report with measured SLO results |
@@ -53,6 +53,30 @@ evidence/                generated test and review outputs
 ```
 
 These implementation directories will be created incrementally. Empty scaffolding is intentionally avoided.
+
+## Implemented local backend
+
+```text
+src/coinbase_adapter/config.py   validated endpoint, product and reliability configuration
+src/coinbase_adapter/client.py   subscribe, receive, heartbeat-age monitoring and reconnect backoff
+src/coinbase_adapter/handler.py  envelope checks, sequence diagnostics and unchanged raw routing
+src/coinbase_adapter/sinks.py    development raw JSONL and quarantine boundaries
+tests/                           sanitized fixtures and unit/contract tests
+Dockerfile                      non-root local runtime
+evidence/                       committed summaries without live payloads
+```
+
+Run locally:
+
+```bash
+make setup
+make test
+make smoke
+```
+
+The local JSONL sink is intentionally a development boundary. It will be replaced by a Kinesis implementation of the same `RawMessageSink` protocol in the next increment. No AWS delivery claim is made yet.
+
+Evidence: [`evidence/local-adapter-step-3-4.json`](evidence/local-adapter-step-3-4.json).
 
 ## Locked adapter rules
 
