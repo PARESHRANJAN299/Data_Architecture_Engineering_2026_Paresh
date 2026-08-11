@@ -182,3 +182,25 @@ The one-page view explains the complete backend behavior: Coinbase messages rema
 This is the end-to-end learning and deployment view. The execution tracker above remains the authority for what has actually been built and verified.
 
 The detailed questions, answers, service responsibilities, deployment order, tests and Silver business-approval loop are documented in [`docs/06-phase-1-source-to-silver-explainer.md`](docs/06-phase-1-source-to-silver-explainer.md).
+
+### S3 prefix without manifests vs Iceberg with manifests
+
+**Question asked:** If the Glue Catalog already contains an S3 location, why does an Iceberg table also require a manifest list?
+
+| Ordinary external Parquet table — without Iceberg manifests | Iceberg table — with manifests |
+|---|---|
+| Glue Catalog points to an S3 prefix. | Glue Catalog points to the Iceberg table and its current metadata location. |
+| The query engine discovers files from the prefix and partition information. | Iceberg metadata selects the current snapshot. |
+| The prefix alone cannot identify current, replaced, deleted, old-snapshot or failed-write files. | The manifest list selects the snapshot's manifests; those manifests identify the exact active Parquet files. |
+| No native Iceberg snapshot/time-travel view exists. | Atomic snapshots, file pruning and time travel are supported. |
+
+> **S3 prefix says where files are stored. Iceberg manifests say which files are officially part of the table right now.**
+
+```text
+Athena/Spark query
+    → Glue Catalog: locate the Iceberg table metadata
+    → Iceberg metadata: select the current snapshot
+    → manifest list: select the manifests for that snapshot
+    → manifests: select the exact active Parquet files
+    → Parquet files: read the actual rows
+```

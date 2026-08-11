@@ -76,6 +76,51 @@ Athena/Spark
     → required Parquet files
 ```
 
+### If Glue Catalog already has an S3 prefix, what does the manifest list do?
+
+This was the exact doubt raised during the review:
+
+> Glue Catalog has a direct S3 prefix link. The query engine can identify the table entry and follow that location, so why is a manifest list required?
+
+The answer depends on the table type.
+
+| Without Iceberg manifests: ordinary external Parquet table | With Iceberg manifests: Iceberg table |
+|---|---|
+| Glue Catalog points to an S3 prefix. | Glue Catalog identifies the Iceberg table and its current metadata location. |
+| The query engine discovers files from the prefix and Catalog partition information. | Iceberg metadata identifies the current table snapshot. |
+| The prefix tells where objects exist, but not which objects form the current valid table version. | The snapshot points to a manifest list containing the manifests for that version. |
+| Old, replaced, deleted, orphaned or failed-write files cannot be classified from their S3 location alone. | Manifests record the exact active Parquet files and useful file/column statistics. |
+| There is no Iceberg snapshot isolation or time-travel state. | Atomic snapshots, time travel, rollback and file pruning are possible. |
+
+An Iceberg query therefore follows this chain:
+
+```text
+Athena/Spark
+    → Glue Catalog table entry
+    → current Iceberg metadata JSON
+    → current snapshot
+    → manifest list for that snapshot
+    → manifest files
+    → exact active Parquet files
+    → table rows
+```
+
+For example, the S3 table directory may physically contain five files:
+
+```text
+part-001.parquet  current
+part-002.parquet  current
+part-003.parquet  replaced by compaction
+part-004.parquet  current
+part-005.parquet  left by an incomplete write
+```
+
+The S3 prefix reveals that all five objects exist. The current Iceberg manifests can declare that only `part-001`, `part-002` and `part-004` belong to the current snapshot. Athena/Spark reads those three and does not treat the other two as current table data.
+
+> **S3 prefix says where files are stored. Iceberg manifests say which files are officially part of the table right now.**
+
+`snapshot-003` in the architecture diagram represents a snapshot ID/version; it is not intended to mean that a physical file must literally be named `snapshot-003`.
+
 ### Why not use CSV to obtain one file?
 
 CSV objects in S3 also do not solve continuous append. CSV additionally loses strong typing, column pruning and efficient compression. Silver therefore uses Iceberg with Parquet; a single CSV can be generated later only as an export.
