@@ -78,6 +78,20 @@ The local JSONL sink is intentionally a development boundary. It will be replace
 
 Evidence: [`evidence/local-adapter-step-3-4.json`](evidence/local-adapter-step-3-4.json).
 
+## Manual AWS infrastructure progress
+
+The first AWS resource has now been configured manually in the AWS Management Console so each architecture decision can be learned and verified before it is automated.
+
+| Resource or control | Status | Evidence |
+|---|---|---|
+| Kinesis stream `lca-coinbase-market-trades-dev` | ✅ ACHIEVED & VERIFIED | Active, provisioned, one shard, 24-hour retention; [redacted evidence](evidence/manual-kinesis-stream-creation.json) |
+| Kinesis server-side encryption | 🟠 NEXT | Disabled at creation; enable and verify Active status |
+| ECS task and execution roles | ⬜ NOT STARTED | Least-privilege policy and access tests required |
+| ECS adapter deployment | ⬜ NOT STARTED | Task health and CloudWatch logs required |
+| Coinbase-to-Kinesis delivery | ⬜ NOT STARTED | Reconciliation and unchanged JSON evidence required |
+
+The complete manual configuration theory and tracker are maintained in [`../docs/07-phase-1-manual-aws-implementation.md`](../docs/07-phase-1-manual-aws-implementation.md).
+
 ## Locked adapter rules
 
 - connect to `wss://advanced-trade-ws.coinbase.com`;

@@ -1,0 +1,36 @@
+{
+  "evidence_type": "manual_aws_console_configuration",
+  "recorded_on": "2026-08-11",
+  "region": "us-east-1",
+  "service": "Amazon Kinesis Data Streams",
+  "resource": {
+    "name": "lca-coinbase-market-trades-dev",
+    "status_observed": "ACTIVE",
+    "capacity_mode": "PROVISIONED",
+    "shards": 1,
+    "retention_hours": 24,
+    "maximum_record_size_kib": 1024,
+    "server_side_encryption_at_creation": "DISABLED",
+    "enhanced_metrics_at_creation": "DISABLED",
+    "sharing_policy_at_creation": "NONE"
+  },
+  "capacity_theory": {
+    "write_bytes_limit_per_second": "1 MiB",
+    "write_records_limit_per_second": 1000,
+    "limit_relationship": "Both limits must be respected; exceeding either can throttle writes.",
+    "shared_read_limit_per_second": "2 MiB"
+  },
+  "retention_theory": "Each record remains readable for 24 hours from its arrival, then expires from Kinesis. Future S3 Bronze retention is independent.",
+  "verification": {
+    "stream_created_and_active": true,
+    "producer_delivery_tested": false,
+    "firehose_delivery_tested": false,
+    "s3_bronze_delivery_tested": false
+  },
+  "security": {
+    "sensitive_identifiers_committed": false,
+    "root_console_session_used": true,
+    "governance_exception": "Root use was selected by the project owner for manual learning. It is documented as a temporary exception and is not the target operating model."
+  },
+  "next_control": "Enable Kinesis server-side encryption, then create least-privilege ECS task and execution roles."
+}

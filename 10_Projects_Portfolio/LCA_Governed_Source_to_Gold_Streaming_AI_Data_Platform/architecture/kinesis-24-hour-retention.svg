@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="700" viewBox="0 0 1600 700" role="img" aria-labelledby="title desc">
+  <title id="title">Kinesis one-day retention explained</title>
+  <desc id="desc">Each record is retained for 24 hours from arrival, while the future S3 Bronze copy persists independently.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12 Z" fill="#2878d0"/></marker>
+    <style>.title{font:700 42px Arial,sans-serif;fill:#102a43}.sub{font:24px Arial,sans-serif;fill:#526b82}.h{font:700 25px Arial,sans-serif;fill:#102a43}.b{font:21px Arial,sans-serif;fill:#334e68}.small{font:18px Arial,sans-serif;fill:#526b82}.center{text-anchor:middle}</style>
+  </defs>
+  <rect width="1600" height="700" fill="#f4f8fb"/><rect width="1600" height="14" fill="#ff9900"/>
+  <text x="80" y="80" class="title">What “Retention: 1 day” means</text>
+  <text x="80" y="124" class="sub">Every Kinesis record has its own rolling 24-hour retention window.</text>
+
+  <line x1="180" y1="292" x2="1390" y2="292" stroke="#2878d0" stroke-width="9" marker-end="url(#arrow)"/>
+  <circle cx="240" cy="292" r="25" fill="#2878d0"/><circle cx="800" cy="292" r="25" fill="#35b69f"/><circle cx="1350" cy="292" r="25" fill="#e55353"/>
+  <text x="240" y="220" class="h center">Record arrives</text><text x="240" y="253" class="b center">Day 1 · 10:00</text>
+  <text x="800" y="220" class="h center">Still available</text><text x="800" y="253" class="b center">consumer can read/recover</text>
+  <text x="1350" y="220" class="h center">Record expires</text><text x="1350" y="253" class="b center">Day 2 · 10:00</text>
+  <text x="800" y="350" class="h center">24 hours in Kinesis</text>
+
+  <rect x="110" y="420" width="650" height="184" rx="20" fill="#f1ebff" stroke="#8a68c7" stroke-width="2"/>
+  <text x="150" y="470" class="h">Kinesis: temporary streaming buffer</text>
+  <text x="150" y="512" class="b">• protects short outages and supports replay</text>
+  <text x="150" y="548" class="b">• expiration removes the record from Kinesis</text>
+  <text x="150" y="581" class="small">It is not the permanent Bronze archive.</text>
+
+  <rect x="840" y="420" width="650" height="184" rx="20" fill="#e6f6f2" stroke="#35b69f" stroke-width="2"/>
+  <text x="880" y="470" class="h">S3 Bronze: durable raw history (later)</text>
+  <text x="880" y="512" class="b">• Firehose will copy buffered records to S3</text>
+  <text x="880" y="548" class="b">• S3 retention is controlled separately</text>
+  <text x="880" y="581" class="small">Once copied, Kinesis expiry does not delete the S3 object.</text>
+</svg>
