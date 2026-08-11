@@ -125,6 +125,7 @@ flowchart LR
 | [`docs/07-phase-1-manual-aws-implementation.md`](docs/07-phase-1-manual-aws-implementation.md) | Manual Kinesis build, capacity theory, retention and verified AWS progress |
 | [`docs/08-kinesis-kms-architecture-interview-guide.md`](docs/08-kinesis-kms-architecture-interview-guide.md) | Beginner, Medium and Company-scale Scenario interview preparation |
 | [`docs/09-ecs-iam-architecture-interview-guide.md`](docs/09-ecs-iam-architecture-interview-guide.md) | ECS task/execution-role architecture and three-mode interview preparation |
+| [`docs/10-ecs-ecr-fargate-simple-explainer.md`](docs/10-ecs-ecr-fargate-simple-explainer.md) | Beginner explanation of packaging, runtime, task replacement and data flow |
 | [`governance/`](governance/) | Governance operating model, control matrix, and approval gates |
 | [`contracts/`](contracts/) | Raw transport rules, target Silver JSON Schema, sample event, and contract metadata |
 | [`automation/`](automation/) | CI/CD, infrastructure, schema, security, and data-quality automation |
@@ -330,3 +331,33 @@ Runtime behavior is intentionally still unverified: ECS has not yet assumed the 
 - Interview preparation: [`docs/09-ecs-iam-architecture-interview-guide.md`](docs/09-ecs-iam-architecture-interview-guide.md)
 
 > Screenshot rule: account IDs and full role/stream ARNs remain excluded from committed evidence.
+
+### Simple explanation: where Python runs
+
+There are two different flows, and keeping them separate removes most of the confusion:
+
+```text
+APPLICATION DEPLOYMENT
+
+Python code → container image → ECR → ECS → Fargate → Python is running
+```
+
+```text
+BUSINESS DATA
+
+Coinbase → running Python adapter → Kinesis → Firehose → S3 Bronze
+```
+
+The services have one simple responsibility each:
+
+```text
+Python adapter = worker that carries messages
+ECR            = warehouse storing the packaged worker software
+ECS            = manager maintaining the required number of tasks
+Fargate        = managed computer where the worker runs
+Kinesis        = streaming destination receiving the messages
+```
+
+With `desired count = 1`, an ECS Service attempts to keep one adapter task running. If that task stops, ECS asks Fargate for a replacement in the configured network. The new task pulls the image, starts Python, reconnects to Coinbase and resumes delivery. A short restart gap can still occur, so reconnect and reconciliation controls remain necessary.
+
+Complete step-by-step explanation: [`docs/10-ecs-ecr-fargate-simple-explainer.md`](docs/10-ecs-ecr-fargate-simple-explainer.md).

@@ -94,6 +94,8 @@ The first AWS resource has now been configured manually in the AWS Management Co
 
 The complete manual configuration theory and tracker are maintained in [`../docs/07-phase-1-manual-aws-implementation.md`](../docs/07-phase-1-manual-aws-implementation.md). Architecture interview practice is maintained in the [`Kinesis/KMS guide`](../docs/08-kinesis-kms-architecture-interview-guide.md) and [`ECS IAM guide`](../docs/09-ecs-iam-architecture-interview-guide.md).
 
+For the beginner-friendly distinction between the deployment path and data path, read [`../docs/10-ecs-ecr-fargate-simple-explainer.md`](../docs/10-ecs-ecr-fargate-simple-explainer.md).
+
 ## Locked adapter rules
 
 - connect to `wss://advanced-trade-ws.coinbase.com`;

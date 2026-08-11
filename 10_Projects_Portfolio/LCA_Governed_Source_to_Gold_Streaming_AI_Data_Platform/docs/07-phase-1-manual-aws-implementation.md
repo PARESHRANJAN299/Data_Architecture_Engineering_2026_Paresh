@@ -96,6 +96,20 @@ Evidence: [`manual-ecs-iam-foundation.json`](../phase-1-source-to-stream/evidenc
 
 The initial IAM **configuration and static authorization tests** are complete. Runtime role assumption, ECR pull, CloudWatch logging and actual Kinesis writes remain unverified until the ECS task is deployed.
 
+## Simple ECS/ECR/Fargate learning path
+
+The complete beginner explanation—covering the Python bridge, Docker image, ECR storage, ECS manager, Fargate compute, task replacement, subnet placement, IAM roles, EC2 alternative and Glue/JDBC boundary—is maintained in [`10-ecs-ecr-fargate-simple-explainer.md`](10-ecs-ecr-fargate-simple-explainer.md).
+
+The shortest version is:
+
+```text
+Python adapter = receives Coinbase messages and sends them to Kinesis
+Docker image   = packaged Python application
+ECR            = stores the application package
+Fargate        = supplies managed compute where Python runs
+ECS Service    = maintains the desired number of running tasks
+```
+
 ## Manual implementation tracker
 
 | Step | Deliverable | Status | Required test or evidence |
@@ -117,6 +131,7 @@ The completed controls are converted into Beginner, Medium and Company-scale Sce
 
 - [Kinesis and KMS architecture interview guide](08-kinesis-kms-architecture-interview-guide.md)
 - [ECS IAM architecture interview guide](09-ecs-iam-architecture-interview-guide.md)
+- [ECS, ECR and Fargate simple explainer](10-ecs-ecr-fargate-simple-explainer.md)
 
 ![Kinesis completion and interview readiness](../architecture/kinesis-configuration-interview-readiness.svg)
 
