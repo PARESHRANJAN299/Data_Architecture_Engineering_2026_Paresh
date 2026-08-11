@@ -1,0 +1,32 @@
+{
+  "evidence_type": "local_kinesis_sink_unit_test",
+  "generated_at_utc": "2026-08-11T20:37:51Z",
+  "scope": "KinesisRawMessageSink request construction and raw-payload preservation",
+  "aws_resources_changed": false,
+  "live_kinesis_write_tested": false,
+  "test_client": "in-memory recording stub",
+  "focused_test_command": "PYTHONPATH=src .venv/bin/python -m unittest tests.test_sinks -v",
+  "focused_tests_passed": 4,
+  "full_test_command": "make test",
+  "full_tests_passed": 16,
+  "verified_behaviors": [
+    "exact development stream name is supplied to PutRecord",
+    "original Coinbase JSON text is encoded directly as UTF-8 bytes",
+    "partition key is supplied without rewriting the source payload",
+    "one multi-trade source message remains one Kinesis record",
+    "oversized records are rejected before the AWS client call",
+    "AWS client exceptions are not hidden"
+  ],
+  "not_yet_verified": [
+    "ECS task-role credential retrieval",
+    "network connectivity from Fargate to Kinesis",
+    "a successful live PutRecord response",
+    "throttle retry and reconciliation",
+    "end-to-end Coinbase-to-Kinesis delivery"
+  ],
+  "sha256": {
+    "src/coinbase_adapter/sinks.py": "7a4897af0959b1fd762579d617413dac990efcedede0840960a598d02eaff141",
+    "src/coinbase_adapter/main.py": "ae1604fc983dd2425c03e2f367dcc8e886e5f9849cd36a6d5e2d4bbd14fe28ff",
+    "tests/test_sinks.py": "0d93954f38bcf426285e58e3274dac9d2e2563bf4abb4fde3464668a3d1d8f6d"
+  }
+}

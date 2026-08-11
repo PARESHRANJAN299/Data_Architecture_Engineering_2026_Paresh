@@ -58,8 +58,12 @@ Evidence: [`manual-kinesis-stream-creation.json`](../phase-1-source-to-stream/ev
 - ✅ Provisioned mode, one shard, 24-hour retention and 1024-KiB record maximum were observed.
 - ✅ Server-side encryption was successfully updated using the AWS-managed KMS key `aws/kinesis`.
 - ✅ Kinesis **resource configuration** is complete for the current development scope.
-- ⬜ No Coinbase producer has written to the stream yet.
+- ✅ Paresh manually submitted one test record through AWS CloudShell; `PutRecord` returned a shard ID, sequence number and `KMS` encryption type.
+- ✅ Data Viewer returned that record from `Trim horizon` with the expected `manual-test` partition key and test payload.
+- ⬜ No Coinbase application producer has written to the stream yet.
 - ⬜ No Firehose, S3 Bronze delivery or end-to-end reconciliation has been tested.
+
+Manual write/read evidence: [`manual-kinesis-write-read-smoke-test.json`](../phase-1-source-to-stream/evidence/manual-kinesis-write-read-smoke-test.json)
 
 This does **not** mean the Kinesis data-delivery implementation is complete. Completion of delivery requires the ECS producer, successful writes, retry/throttle/replay tests and source-to-Kinesis count reconciliation.
 
@@ -110,14 +114,34 @@ Fargate        = supplies managed compute where Python runs
 ECS Service    = maintains the desired number of running tasks
 ```
 
+## How Python runs before ECR and ECS exist
+
+During development, Paresh's Mac is the temporary computer running Python:
+
+```text
+Mac Python process
+    → KinesisRawMessageSink
+    → recording test client (not AWS)
+    → inspect the would-be PutRecord request
+```
+
+The recording client behaves like the small part of the AWS SDK used by the sink, but it stores the request in memory. This proves that the exact stream name, partition key and unchanged Coinbase UTF-8 bytes are supplied correctly without requiring AWS credentials or changing the real stream.
+
+This test does **not** prove AWS network connectivity, ECS role assumption or live Kinesis delivery. Those checks can happen only after the packaged image is stored in ECR and run by ECS/Fargate.
+
+Local evidence: [`local-kinesis-sink-test.json`](../phase-1-source-to-stream/evidence/local-kinesis-sink-test.json)
+
 ## Manual implementation tracker
 
 | Step | Deliverable | Status | Required test or evidence |
 |---:|---|---|---|
 | 1 | Create Kinesis data stream | ✅ ACHIEVED & VERIFIED | Stream observed `ACTIVE`; redacted configuration evidence committed |
 | 2 | Enable Kinesis server-side encryption | ✅ ACHIEVED & VERIFIED | Success confirmation observed; AWS-managed `aws/kinesis` selected |
+| 2A | Manually write and read one Kinesis record | ✅ ACHIEVED & VERIFIED | CloudShell `PutRecord` succeeded with KMS; Data Viewer returned the expected test record |
 | 3 | Create least-privilege ECS task and execution roles | ✅ ACHIEVED & VERIFIED | Trust policies verified; exact-stream allow and wildcard-deny simulations passed |
-| 4 | Implement/test Kinesis sink, then publish to ECR and create ECS runtime | 🟠 NEXT | Local tests, versioned image, successful pull, runtime role assumption, healthy task and CloudWatch logs |
+| 4A | Implement and locally test `KinesisRawMessageSink` | ✅ ACHIEVED & VERIFIED — LOCAL | 4 focused tests and all 16 adapter tests passed; no AWS resource was changed |
+| 4B | Create ECR repository and publish versioned image | 🟠 NEXT | Image URI, immutable version tag and successful scan evidence |
+| 4C | Create ECS/Fargate runtime | ⬜ NOT STARTED | Successful pull, runtime role assumption, healthy task and CloudWatch logs |
 | 5 | Prove Coinbase → ECS → Kinesis delivery | ⬜ NOT STARTED | Record counts, timestamps and unchanged JSON sample evidence |
 | 6 | Create Firehose and S3 Bronze delivery | ⬜ NOT STARTED | Buffered `JSON.GZIP` objects plus count reconciliation |
 

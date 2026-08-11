@@ -1,0 +1,38 @@
+{
+  "evidence_type": "manual_kinesis_write_read_smoke_test",
+  "recorded_at_utc": "2026-08-11T20:47:57Z",
+  "performed_by": "Paresh Ranjan Rout",
+  "region": "us-east-1",
+  "stream_name": "lca-coinbase-market-trades-dev",
+  "producer": "AWS CloudShell using kinesis:PutRecord",
+  "partition_key": "manual-test",
+  "write_observation": {
+    "api_response_received": true,
+    "shard_id_received": true,
+    "sequence_number_received": true,
+    "encryption_type": "KMS"
+  },
+  "read_observation": {
+    "consumer": "Kinesis console Data Viewer",
+    "starting_position": "Trim horizon",
+    "records_returned": 1,
+    "partition_key_matched": true,
+    "test_payload_matched": true,
+    "approximate_arrival_time_observed": true
+  },
+  "result": "PASS",
+  "verified_scope": [
+    "the active stream accepted a real PutRecord request",
+    "server-side KMS encryption was reported for the accepted record",
+    "the record remained readable from the expected shard",
+    "Data Viewer returned the expected partition key and test payload"
+  ],
+  "not_verified_by_this_test": [
+    "KinesisRawMessageSink running against AWS",
+    "Coinbase WebSocket connectivity from AWS",
+    "ECS task-role credential assumption",
+    "ECR image pull or ECS/Fargate task health",
+    "end-to-end Coinbase-to-Kinesis reconciliation"
+  ],
+  "redaction": "Account ID, stream ARN, sequence number and screenshots are intentionally excluded."
+}

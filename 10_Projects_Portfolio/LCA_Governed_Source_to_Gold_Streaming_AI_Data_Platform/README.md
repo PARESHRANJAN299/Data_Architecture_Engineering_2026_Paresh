@@ -157,8 +157,8 @@ Phase 1 is the active build. Source selection, raw-transport architecture, gover
 | 3 | Target architecture, governance controls and AWS service decisions | ✅ ACHIEVED & VERIFIED | ADR set, control matrix, diagrams and presentation structural checks passed |
 | 4 | Raw Coinbase transport contract and target Silver mapping | ✅ ACHIEVED & VERIFIED — design baseline | JSON/YAML parse checks passed; raw-payload and live-fixture validation remain Step 5 |
 | 5 | Local Coinbase connectivity spike and sanitized fixtures | ✅ **ACHIEVED & VERIFIED** | 20 live market messages containing 230 trades, 10 heartbeats, both products, 0 sequence gaps and 0 quarantine; summary/hash committed without payloads |
-| 6 | Containerized local source adapter | ✅ **ACHIEVED & VERIFIED** | 12 unit/contract tests passed; non-root UID `10001`; bounded live container smoke test passed |
-| 7 | Kinesis producer and reconciliation consumer | 🟠 **IN PROGRESS** — resource configured | Stream is Active and encrypted; producer integration, partial-failure, duplicate and replay tests remain |
+| 6 | Containerized local source adapter | ✅ **ACHIEVED & VERIFIED** | Initial 12 unit/contract tests passed; non-root UID `10001`; bounded live container smoke test passed |
+| 7 | Kinesis producer and reconciliation consumer | 🟠 **IN PROGRESS** — local sink and stream smoke verified | Stream is Active/encrypted; 4 focused sink tests and all 16 adapter tests pass; manual write/read passed; application delivery, retry, duplicate and replay remain |
 | 8 | Manual AWS foundation and later infrastructure-as-code reproduction | 🟠 **IN PROGRESS** | Kinesis and initial ECS IAM evidence committed; networking, ECR, ECS and reproducible automation remain |
 | 9 | ECS deployment, contracts, quarantine, DLQ and control state | ⬜ NOT STARTED | End-to-end source-to-Kinesis reconciliation and redrive tests required |
 | 10 | Observability, security, recovery and cost evidence | ⬜ NOT STARTED | Alarms, failure injection, runbooks, access tests and unit-cost report required |
@@ -166,12 +166,11 @@ Phase 1 is the active build. Source selection, raw-transport architecture, gover
 
 ### Immediate next steps
 
-1. Implement the Kinesis sink behind the tested raw-message interface.
-2. Batch writes while preserving one unchanged Coinbase message per Kinesis record.
-3. Retry only failed `PutRecords` entries with capped exponential backoff and jitter.
-4. Pass local stub tests, then create ECR and publish the versioned container image.
-5. Create the ECS runtime and prove temporary role credentials, ECR pull and CloudWatch logging.
-6. Add a reconciliation consumer and prove accepted, acknowledged, retried and failed counts balance.
+1. Create the ECR repository and publish the versioned container image.
+2. Create the ECS runtime and prove temporary role credentials, ECR pull and CloudWatch logging.
+3. Prove the first live `PutRecord` reaches the exact Kinesis stream unchanged.
+4. Add controlled retry, batching where justified and reconciliation metrics.
+5. Add a reconciliation consumer and prove accepted, acknowledged, retried and failed counts balance.
 
 The detailed implementation order and definition of done are maintained in [`phase-1-source-to-stream/README.md`](phase-1-source-to-stream/README.md).
 
@@ -287,8 +286,11 @@ The first manually configured AWS service is complete for the current developmen
 |---:|---|---|---|
 | 1 | Create `lca-coinbase-market-trades-dev` | ✅ **ACHIEVED & VERIFIED** | Stream observed Active; [redacted evidence](phase-1-source-to-stream/evidence/manual-kinesis-stream-creation.json) |
 | 2 | Enable server-side encryption | ✅ **ACHIEVED & VERIFIED** | Encryption update succeeded with AWS-managed `aws/kinesis` |
+| 2A | Manually write and read one Kinesis record | ✅ **ACHIEVED & VERIFIED** | CloudShell write returned KMS; Data Viewer returned the expected record; [redacted evidence](phase-1-source-to-stream/evidence/manual-kinesis-write-read-smoke-test.json) |
 | 3 | Create ECS task and execution roles | ✅ **ACHIEVED & VERIFIED** | Trust verified; exact-stream allow and wildcard-deny simulations passed; [redacted evidence](phase-1-source-to-stream/evidence/manual-ecs-iam-foundation.json) |
-| 4 | Implement Kinesis sink, publish image and deploy to ECS | 🟠 **NEXT** | Local tests, versioned ECR image, runtime role assumption, healthy task and CloudWatch logs required |
+| 4A | Implement and locally test `KinesisRawMessageSink` | ✅ **ACHIEVED & VERIFIED — LOCAL** | 4 focused tests and all 16 adapter tests passed; [evidence](phase-1-source-to-stream/evidence/local-kinesis-sink-test.json) |
+| 4B | Publish versioned image to ECR | 🟠 **NEXT** | Repository settings, image URI and successful scan evidence required |
+| 4C | Deploy image to ECS/Fargate | ⬜ **NOT STARTED** | Runtime role assumption, healthy task and CloudWatch logs required |
 | 5 | Prove Coinbase → ECS → Kinesis | ⬜ **NOT STARTED** | Count reconciliation and unchanged-message evidence required |
 | 6 | Add Firehose → S3 Bronze | ⬜ **NOT STARTED** | Buffered objects and source-to-Bronze reconciliation required |
 

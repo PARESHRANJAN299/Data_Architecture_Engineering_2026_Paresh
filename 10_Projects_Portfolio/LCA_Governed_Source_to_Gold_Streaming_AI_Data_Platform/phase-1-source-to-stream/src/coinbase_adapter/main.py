@@ -10,7 +10,12 @@ from typing import Optional, Sequence
 from .client import CoinbaseWebSocketClient
 from .config import AdapterConfig
 from .handler import MessageHandler
-from .sinks import JsonlQuarantineSink, JsonlRawMessageSink
+from .sinks import (
+    JsonlQuarantineSink,
+    JsonlRawMessageSink,
+    KinesisRawMessageSink,
+    RawMessageSink,
+)
 
 
 LOGGER = logging.getLogger(__name__)
@@ -18,7 +23,12 @@ LOGGER = logging.getLogger(__name__)
 
 def _arguments(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Capture unchanged Coinbase market-trade messages")
-    parser.add_argument("--output", required=True, type=Path, help="Development JSONL raw sink")
+    destination = parser.add_mutually_exclusive_group(required=True)
+    destination.add_argument("--output", type=Path, help="Development JSONL raw sink")
+    destination.add_argument(
+        "--kinesis-stream",
+        help="Kinesis stream receiving one unchanged source message per record",
+    )
     parser.add_argument(
         "--quarantine",
         type=Path,
@@ -32,11 +42,28 @@ def _arguments(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _raw_sink(args: argparse.Namespace) -> RawMessageSink:
+    if args.kinesis_stream:
+        import boto3
+
+        return KinesisRawMessageSink(
+            stream_name=args.kinesis_stream,
+            client=boto3.client("kinesis"),
+        )
+    return JsonlRawMessageSink(args.output)
+
+
 async def _run(args: argparse.Namespace) -> None:
     config = AdapterConfig.from_env()
-    quarantine_path = args.quarantine or args.output.with_name("quarantine.jsonl")
+    quarantine_path = args.quarantine
+    if quarantine_path is None:
+        quarantine_path = (
+            args.output.with_name("quarantine.jsonl")
+            if args.output
+            else Path("/tmp/coinbase-quarantine.jsonl")
+        )
     handler = MessageHandler(
-        raw_sink=JsonlRawMessageSink(args.output),
+        raw_sink=_raw_sink(args),
         quarantine_sink=JsonlQuarantineSink(quarantine_path),
         partition_key=config.partition_key,
     )

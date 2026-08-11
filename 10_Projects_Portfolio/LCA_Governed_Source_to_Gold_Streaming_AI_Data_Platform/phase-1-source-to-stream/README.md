@@ -33,7 +33,7 @@ Infrastructure       → Terraform + CI/CD
 | 2 | Finalize raw transport rules and target Silver mapping | ✅ ACHIEVED | JSON/YAML checks and reviewed mapping specification |
 | 3 | Connect locally and capture sanitized source fixtures | ✅ ACHIEVED | Curated fixtures plus bounded live capture: 20 market messages, 230 trades, 10 heartbeats, both products, 0 gaps/quarantine |
 | 4 | Build and containerize the source adapter | ✅ ACHIEVED | 12 unit/contract tests, raw-preservation proof, non-root image and live container smoke test |
-| 5 | Add Kinesis batching, partial-failure retry, backoff and metrics | 🟠 NEXT | Integration and reconciliation report |
+| 5 | Add and prove the Kinesis producer | 🟠 IN PROGRESS | Local sink tests and manual stream write/read passed; application delivery, retry and reconciliation remain |
 | 6 | Provision the AWS environment through Terraform | ⬜ NOT STARTED | Validated plan, security scan and deployment evidence |
 | 7 | Add quarantine, DLQ, IAM, KMS, DynamoDB, CloudWatch and CloudTrail | ⬜ NOT STARTED | Access, redrive, alarm and audit evidence |
 | 8 | Execute load, reconnect, gap, duplicate, throttle and task-failure tests | ⬜ NOT STARTED | Failure-test report with measured SLO results |
@@ -60,8 +60,8 @@ These implementation directories will be created incrementally. Empty scaffoldin
 src/coinbase_adapter/config.py   validated endpoint, product and reliability configuration
 src/coinbase_adapter/client.py   subscribe, receive, heartbeat-age monitoring and reconnect backoff
 src/coinbase_adapter/handler.py  envelope checks, sequence diagnostics and unchanged raw routing
-src/coinbase_adapter/sinks.py    development raw JSONL and quarantine boundaries
-tests/                           sanitized fixtures and unit/contract tests
+src/coinbase_adapter/sinks.py    development JSONL plus unchanged-message Kinesis `PutRecord` sink
+tests/                           sanitized fixtures and 16 passing unit/contract tests
 Dockerfile                      non-root local runtime
 evidence/                       committed summaries without live payloads
 ```
@@ -74,9 +74,25 @@ make test
 make smoke
 ```
 
-The local JSONL sink is intentionally a development boundary. It will be replaced by a Kinesis implementation of the same `RawMessageSink` protocol in the next increment. No AWS delivery claim is made yet.
+The same `RawMessageSink` protocol now supports either the development JSONL destination or Kinesis. The Kinesis implementation sends one complete Coinbase source message as one `PutRecord` data blob. Local tests use a recording stub, so no AWS delivery claim is made yet.
+
+Test only the Kinesis request contract without AWS credentials or AWS resource changes:
+
+```bash
+PYTHONPATH=src .venv/bin/python -m unittest tests.test_sinks -v
+```
+
+The future ECS task will select the AWS destination with:
+
+```bash
+python -m coinbase_adapter.main --kinesis-stream lca-coinbase-market-trades-dev
+```
+
+The ECS task role will supply temporary AWS credentials automatically. No access key belongs in the command, source code, image or GitHub.
 
 Evidence: [`evidence/local-adapter-step-3-4.json`](evidence/local-adapter-step-3-4.json).
+Kinesis sink evidence: [`evidence/local-kinesis-sink-test.json`](evidence/local-kinesis-sink-test.json).
+Manual AWS smoke evidence: [`evidence/manual-kinesis-write-read-smoke-test.json`](evidence/manual-kinesis-write-read-smoke-test.json).
 
 ## Manual AWS infrastructure progress
 
@@ -86,11 +102,12 @@ The first AWS resource has now been configured manually in the AWS Management Co
 |---|---|---|
 | Kinesis stream `lca-coinbase-market-trades-dev` | ✅ ACHIEVED & VERIFIED | Active, provisioned, one shard, 24-hour retention; [redacted evidence](evidence/manual-kinesis-stream-creation.json) |
 | Kinesis server-side encryption | ✅ ACHIEVED & VERIFIED | Update succeeded using AWS-managed `aws/kinesis` |
+| Manual Kinesis write/read smoke test | ✅ ACHIEVED & VERIFIED | CloudShell returned shard/sequence/KMS; Data Viewer returned the expected record from `Trim horizon`; [redacted evidence](evidence/manual-kinesis-write-read-smoke-test.json) |
 | ECS task and execution roles | ✅ ACHIEVED & VERIFIED | Trust verified; exact-stream allow and wildcard-deny simulations passed; [redacted evidence](evidence/manual-ecs-iam-foundation.json) |
-| Kinesis sink implementation and tests | 🟠 NEXT | Exact-stream writes, batching, partial-failure retry and stub evidence required |
+| Kinesis `PutRecord` sink and local tests | ✅ ACHIEVED & VERIFIED — LOCAL | 4 focused tests and all 16 adapter tests passed; [evidence](evidence/local-kinesis-sink-test.json) |
 | ECR repository and adapter image | ⬜ NOT STARTED | Versioned image and image-scan evidence required |
 | ECS adapter deployment | ⬜ NOT STARTED | Runtime role assumption, task health and CloudWatch logs required |
-| Coinbase-to-Kinesis delivery | ⬜ NOT STARTED | Reconciliation and unchanged JSON evidence required |
+| Coinbase-to-Kinesis live delivery | ⬜ NOT STARTED | Reconciliation, retry and unchanged JSON evidence required |
 
 The complete manual configuration theory and tracker are maintained in [`../docs/07-phase-1-manual-aws-implementation.md`](../docs/07-phase-1-manual-aws-implementation.md). Architecture interview practice is maintained in the [`Kinesis/KMS guide`](../docs/08-kinesis-kms-architecture-interview-guide.md) and [`ECS IAM guide`](../docs/09-ecs-iam-architecture-interview-guide.md).
 
