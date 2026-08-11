@@ -177,3 +177,5 @@ The task role is the application identity. The execution role is the ECS/Fargate
 - [Amazon ECS task execution IAM role](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html)
 - [Best practices for IAM roles in Amazon ECS](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/security-iam-roles.html)
 - [IAM policy evaluation logic](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html)
+
+Continue with the broader container-runtime questions in [`11-ecs-ecr-fargate-data-engineering-architecture-interview-guide.md`](11-ecs-ecr-fargate-data-engineering-architecture-interview-guide.md).

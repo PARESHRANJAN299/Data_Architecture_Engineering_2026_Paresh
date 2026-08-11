@@ -96,6 +96,8 @@ The complete manual configuration theory and tracker are maintained in [`../docs
 
 For the beginner-friendly distinction between the deployment path and data path, read [`../docs/10-ecs-ecr-fargate-simple-explainer.md`](../docs/10-ecs-ecr-fargate-simple-explainer.md).
 
+For Data Engineer and Data Architect interview practice in Beginner, Medium and Company-scale Scenario modes, read [`../docs/11-ecs-ecr-fargate-data-engineering-architecture-interview-guide.md`](../docs/11-ecs-ecr-fargate-data-engineering-architecture-interview-guide.md).
+
 ## Locked adapter rules
 
 - connect to `wss://advanced-trade-ws.coinbase.com`;

@@ -132,6 +132,7 @@ The completed controls are converted into Beginner, Medium and Company-scale Sce
 - [Kinesis and KMS architecture interview guide](08-kinesis-kms-architecture-interview-guide.md)
 - [ECS IAM architecture interview guide](09-ecs-iam-architecture-interview-guide.md)
 - [ECS, ECR and Fargate simple explainer](10-ecs-ecr-fargate-simple-explainer.md)
+- [ECS, ECR and Fargate Data Engineer/Architect interview guide](11-ecs-ecr-fargate-data-engineering-architecture-interview-guide.md)
 
 ![Kinesis completion and interview readiness](../architecture/kinesis-configuration-interview-readiness.svg)
 

@@ -126,6 +126,7 @@ flowchart LR
 | [`docs/08-kinesis-kms-architecture-interview-guide.md`](docs/08-kinesis-kms-architecture-interview-guide.md) | Beginner, Medium and Company-scale Scenario interview preparation |
 | [`docs/09-ecs-iam-architecture-interview-guide.md`](docs/09-ecs-iam-architecture-interview-guide.md) | ECS task/execution-role architecture and three-mode interview preparation |
 | [`docs/10-ecs-ecr-fargate-simple-explainer.md`](docs/10-ecs-ecr-fargate-simple-explainer.md) | Beginner explanation of packaging, runtime, task replacement and data flow |
+| [`docs/11-ecs-ecr-fargate-data-engineering-architecture-interview-guide.md`](docs/11-ecs-ecr-fargate-data-engineering-architecture-interview-guide.md) | Three-mode Data Engineer and Data Architect interview preparation |
 | [`governance/`](governance/) | Governance operating model, control matrix, and approval gates |
 | [`contracts/`](contracts/) | Raw transport rules, target Silver JSON Schema, sample event, and contract metadata |
 | [`automation/`](automation/) | CI/CD, infrastructure, schema, security, and data-quality automation |
@@ -361,3 +362,13 @@ Kinesis        = streaming destination receiving the messages
 With `desired count = 1`, an ECS Service attempts to keep one adapter task running. If that task stops, ECS asks Fargate for a replacement in the configured network. The new task pulls the image, starts Python, reconnects to Coinbase and resumes delivery. A short restart gap can still occur, so reconnect and reconciliation controls remain necessary.
 
 Complete step-by-step explanation: [`docs/10-ecs-ecr-fargate-simple-explainer.md`](docs/10-ecs-ecr-fargate-simple-explainer.md).
+
+### ECS, ECR and Fargate interview preparation
+
+The completed learning is converted into separate **Data Engineer** and **Data Architect** expectations across three modes:
+
+1. **Beginner** — image, container, ECR, ECS, Fargate, task definition, service and IAM roles.
+2. **Medium** — image pull, logging, immutable deployment, scanning, lifecycle, runtime choice and availability trade-offs.
+3. **Company-scale Scenario** — restart loops, duplicates, rollback, zero-downtime WebSocket deployment, environment isolation and cross-account image delivery.
+
+Interview guide: [`docs/11-ecs-ecr-fargate-data-engineering-architecture-interview-guide.md`](docs/11-ecs-ecr-fargate-data-engineering-architecture-interview-guide.md).

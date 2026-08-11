@@ -307,6 +307,10 @@ Real Coinbase-to-Kinesis delivery            ⬜ not tested
 4. Fargate supplies managed compute, while ECS manages the task lifecycle.
 5. An ECS Service replaces a stopped task to maintain desired count, but recovery and reconciliation must still be tested.
 
+## Interview preparation
+
+Practice the same concepts from both implementation and architecture perspectives in [`11-ecs-ecr-fargate-data-engineering-architecture-interview-guide.md`](11-ecs-ecr-fargate-data-engineering-architecture-interview-guide.md). It uses Beginner, Medium and Company-scale Scenario modes.
+
 ## AWS references
 
 - [Amazon ECS services and task replacement](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html)
