@@ -1,0 +1,50 @@
+{
+  "evidence_type": "manual_aws_console_iam_configuration",
+  "recorded_on": "2026-08-11",
+  "service": "AWS Identity and Access Management",
+  "task_role": {
+    "name": "lca-coinbase-ecs-task-role-dev",
+    "trusted_service": "ecs-tasks.amazonaws.com",
+    "assume_role_action": "sts:AssumeRole",
+    "inline_policy": "lca-coinbase-kinesis-write-inline-dev",
+    "allowed_actions": [
+      "kinesis:PutRecord",
+      "kinesis:PutRecords"
+    ],
+    "resource_scope": {
+      "region": "us-east-1",
+      "stream_name": "lca-coinbase-market-trades-dev",
+      "all_streams_allowed": false,
+      "sensitive_resource_arn_committed": false
+    },
+    "policy_simulation": {
+      "exact_stream_put_record": "ALLOWED",
+      "exact_stream_put_records": "ALLOWED",
+      "wildcard_resource_put_record": "IMPLICIT_DENY",
+      "wildcard_resource_put_records": "IMPLICIT_DENY"
+    }
+  },
+  "execution_role": {
+    "name": "lca-coinbase-ecs-execution-role-dev",
+    "trusted_service": "ecs-tasks.amazonaws.com",
+    "assume_role_action": "sts:AssumeRole",
+    "attached_aws_managed_policy": "AmazonECSTaskExecutionRolePolicy",
+    "application_kinesis_policy_attached": false
+  },
+  "verification": {
+    "task_role_configuration_verified": true,
+    "task_role_policy_simulation_verified": true,
+    "execution_role_configuration_verified": true,
+    "runtime_role_assumption_tested": false,
+    "ecr_image_pull_tested": false,
+    "cloudwatch_log_delivery_tested": false,
+    "application_kinesis_write_tested": false
+  },
+  "completion_boundary": "The initial ECS IAM configuration and static permission simulation are complete. Runtime credentials, ECR pull, CloudWatch logs and Kinesis writes require ECS deployment evidence.",
+  "security": {
+    "long_lived_application_credentials_created": false,
+    "account_id_or_role_arn_committed": false,
+    "raw_console_screenshots_committed": false
+  },
+  "next_control": "Implement and locally test the Kinesis sink, then create ECR and publish the versioned Coinbase adapter image."
+}

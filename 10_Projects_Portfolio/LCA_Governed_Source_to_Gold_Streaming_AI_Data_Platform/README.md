@@ -124,6 +124,7 @@ flowchart LR
 | [`docs/06-phase-1-source-to-silver-explainer.md`](docs/06-phase-1-source-to-silver-explainer.md) | Complete source-to-Silver backend, resolved questions and deployment proof |
 | [`docs/07-phase-1-manual-aws-implementation.md`](docs/07-phase-1-manual-aws-implementation.md) | Manual Kinesis build, capacity theory, retention and verified AWS progress |
 | [`docs/08-kinesis-kms-architecture-interview-guide.md`](docs/08-kinesis-kms-architecture-interview-guide.md) | Beginner, Medium and Company-scale Scenario interview preparation |
+| [`docs/09-ecs-iam-architecture-interview-guide.md`](docs/09-ecs-iam-architecture-interview-guide.md) | ECS task/execution-role architecture and three-mode interview preparation |
 | [`governance/`](governance/) | Governance operating model, control matrix, and approval gates |
 | [`contracts/`](contracts/) | Raw transport rules, target Silver JSON Schema, sample event, and contract metadata |
 | [`automation/`](automation/) | CI/CD, infrastructure, schema, security, and data-quality automation |
@@ -137,7 +138,7 @@ flowchart LR
 
 **🔒 Source locked:** Coinbase Advanced Trade public WebSocket using `market_trades` and `heartbeats` for `BTC-USD` and `ETH-USD`.
 
-Phase 1 is the active build. Source selection, raw-transport architecture, governance baseline, source contract, target Silver mapping, live Coinbase connectivity and the containerized local adapter are complete and repository-validated. The first AWS resource—a provisioned one-shard Kinesis stream—is created and Active. Producer delivery, Firehose/S3, ECS deployment and production-scale operational evidence have not yet passed their tests. Phases 2 and 3 remain target-state roadmaps until the Phase 1 gate passes.
+Phase 1 is the active build. Source selection, raw-transport architecture, governance baseline, source contract, target Silver mapping, live Coinbase connectivity and the containerized local adapter are complete and repository-validated. The encrypted Kinesis stream and initial ECS IAM configuration are complete; exact-stream allows and wildcard denies passed policy simulation. Runtime role assumption, producer delivery, Firehose/S3, ECS deployment and production-scale operational evidence have not yet passed their tests. Phases 2 and 3 remain target-state roadmaps until the Phase 1 gate passes.
 
 ## Phase 1 execution tracker
 
@@ -156,7 +157,7 @@ Phase 1 is the active build. Source selection, raw-transport architecture, gover
 | 5 | Local Coinbase connectivity spike and sanitized fixtures | ✅ **ACHIEVED & VERIFIED** | 20 live market messages containing 230 trades, 10 heartbeats, both products, 0 sequence gaps and 0 quarantine; summary/hash committed without payloads |
 | 6 | Containerized local source adapter | ✅ **ACHIEVED & VERIFIED** | 12 unit/contract tests passed; non-root UID `10001`; bounded live container smoke test passed |
 | 7 | Kinesis producer and reconciliation consumer | 🟠 **IN PROGRESS** — resource configured | Stream is Active and encrypted; producer integration, partial-failure, duplicate and replay tests remain |
-| 8 | Manual AWS foundation and later infrastructure-as-code reproduction | 🟠 **IN PROGRESS** | Kinesis configuration evidence committed; IAM, networking, ECS and reproducible automation remain |
+| 8 | Manual AWS foundation and later infrastructure-as-code reproduction | 🟠 **IN PROGRESS** | Kinesis and initial ECS IAM evidence committed; networking, ECR, ECS and reproducible automation remain |
 | 9 | ECS deployment, contracts, quarantine, DLQ and control state | ⬜ NOT STARTED | End-to-end source-to-Kinesis reconciliation and redrive tests required |
 | 10 | Observability, security, recovery and cost evidence | ⬜ NOT STARTED | Alarms, failure injection, runbooks, access tests and unit-cost report required |
 | 11 | Phase 1 Gate approval | ⬜ NOT STARTED | Every mandatory Gate 1 control must link to passing evidence |
@@ -166,9 +167,9 @@ Phase 1 is the active build. Source selection, raw-transport architecture, gover
 1. Implement the Kinesis sink behind the tested raw-message interface.
 2. Batch writes while preserving one unchanged Coinbase message per Kinesis record.
 3. Retry only failed `PutRecords` entries with capped exponential backoff and jitter.
-4. Add a reconciliation consumer and prove accepted, acknowledged, retried and failed counts balance.
-5. Add local stub tests before provisioning any AWS resource.
-6. Define the Terraform Kinesis/IAM/KMS foundation and review its plan before deployment.
+4. Pass local stub tests, then create ECR and publish the versioned container image.
+5. Create the ECS runtime and prove temporary role credentials, ECR pull and CloudWatch logging.
+6. Add a reconciliation consumer and prove accepted, acknowledged, retried and failed counts balance.
 
 The detailed implementation order and definition of done are maintained in [`phase-1-source-to-stream/README.md`](phase-1-source-to-stream/README.md).
 
@@ -284,8 +285,8 @@ The first manually configured AWS service is complete for the current developmen
 |---:|---|---|---|
 | 1 | Create `lca-coinbase-market-trades-dev` | ✅ **ACHIEVED & VERIFIED** | Stream observed Active; [redacted evidence](phase-1-source-to-stream/evidence/manual-kinesis-stream-creation.json) |
 | 2 | Enable server-side encryption | ✅ **ACHIEVED & VERIFIED** | Encryption update succeeded with AWS-managed `aws/kinesis` |
-| 3 | Create ECS task and execution roles | 🟠 **NEXT** | Least-privilege access tests required |
-| 4 | Deploy the Coinbase adapter to ECS | ⬜ **NOT STARTED** | Healthy task and CloudWatch log evidence required |
+| 3 | Create ECS task and execution roles | ✅ **ACHIEVED & VERIFIED** | Trust verified; exact-stream allow and wildcard-deny simulations passed; [redacted evidence](phase-1-source-to-stream/evidence/manual-ecs-iam-foundation.json) |
+| 4 | Implement Kinesis sink, publish image and deploy to ECS | 🟠 **NEXT** | Local tests, versioned ECR image, runtime role assumption, healthy task and CloudWatch logs required |
 | 5 | Prove Coinbase → ECS → Kinesis | ⬜ **NOT STARTED** | Count reconciliation and unchanged-message evidence required |
 | 6 | Add Firehose → S3 Bronze | ⬜ **NOT STARTED** | Buffered objects and source-to-Bronze reconciliation required |
 
@@ -306,3 +307,26 @@ Architecture interview preparation now follows three permanent modes:
 3. **Company-scale Scenario** — solve AWS-style SaaS, Netflix-like streaming, LinkedIn-like activity, Databricks-like lakehouse, Walmart-like retail and FAANG-scale resilience problems.
 
 Practice guide: [`docs/08-kinesis-kms-architecture-interview-guide.md`](docs/08-kinesis-kms-architecture-interview-guide.md).
+
+### ECS IAM foundation — ACHIEVED & VERIFIED
+
+```text
+Coinbase application
+    → lca-coinbase-ecs-task-role-dev
+    → PutRecord + PutRecords
+    → exact development Kinesis stream only
+
+ECS/Fargate platform
+    → lca-coinbase-ecs-execution-role-dev
+    → AmazonECSTaskExecutionRolePolicy
+    → ECR image pull + CloudWatch log delivery
+```
+
+The task role's exact-stream positive test returned **Allowed** for both write actions. The wildcard-resource negative test returned **ImplicitDeny**, proving the role cannot write to every stream. Both roles trust `ecs-tasks.amazonaws.com`; no static AWS keys are stored in code, the container or GitHub.
+
+Runtime behavior is intentionally still unverified: ECS has not yet assumed the roles, pulled an image, delivered logs or written a Coinbase record.
+
+- Evidence: [`manual-ecs-iam-foundation.json`](phase-1-source-to-stream/evidence/manual-ecs-iam-foundation.json)
+- Interview preparation: [`docs/09-ecs-iam-architecture-interview-guide.md`](docs/09-ecs-iam-architecture-interview-guide.md)
+
+> Screenshot rule: account IDs and full role/stream ARNs remain excluded from committed evidence.

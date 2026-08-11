@@ -63,5 +63,5 @@
   <rect x="80" y="700" width="1440" height="128" rx="18" fill="#102a43"/>
   <text x="120" y="748" class="h white">Verified now</text>
   <text x="120" y="786" class="b white">The transport service exists. No producer records or end-to-end delivery have been verified.</text>
-  <text x="120" y="817" class="small white">Next implementation boundary: create least-privilege ECS roles, deploy the adapter and prove record delivery.</text>
+  <text x="120" y="817" class="small white">IAM roles are verified. Next: implement the Kinesis sink, publish the image, deploy ECS and prove record delivery.</text>
 </svg>

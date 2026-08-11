@@ -65,14 +65,45 @@ This does **not** mean the Kinesis data-delivery implementation is complete. Com
 
 The supplied console screenshots contained the AWS account identifier and full resource ARN. They are intentionally not published. The architecture SVGs and redacted JSON retain the useful configuration evidence without exposing account identifiers.
 
+## Step 3 — Initial ECS IAM foundation completed
+
+Two different identities are required because the application and the ECS/Fargate platform are different callers:
+
+```text
+Coinbase Python application
+    → task role: lca-coinbase-ecs-task-role-dev
+    → PutRecord and PutRecords
+    → exact development Kinesis stream only
+
+ECS/Fargate platform
+    → execution role: lca-coinbase-ecs-execution-role-dev
+    → AmazonECSTaskExecutionRolePolicy
+    → ECR image pull and CloudWatch log delivery
+```
+
+Both roles trust `ecs-tasks.amazonaws.com` through `sts:AssumeRole`. Their policies differ because trust answers **who may use the role**, while permissions answer **what the role may do and where**.
+
+Task-role policy simulation produced both required outcomes:
+
+| Test | Expected | Observed |
+|---|---|---|
+| `PutRecord` on exact stream ARN | Allow | ✅ Allowed |
+| `PutRecords` on exact stream ARN | Allow | ✅ Allowed |
+| `PutRecord` on wildcard resource | Deny | ✅ Implicit deny |
+| `PutRecords` on wildcard resource | Deny | ✅ Implicit deny |
+
+Evidence: [`manual-ecs-iam-foundation.json`](../phase-1-source-to-stream/evidence/manual-ecs-iam-foundation.json)
+
+The initial IAM **configuration and static authorization tests** are complete. Runtime role assumption, ECR pull, CloudWatch logging and actual Kinesis writes remain unverified until the ECS task is deployed.
+
 ## Manual implementation tracker
 
 | Step | Deliverable | Status | Required test or evidence |
 |---:|---|---|---|
 | 1 | Create Kinesis data stream | ✅ ACHIEVED & VERIFIED | Stream observed `ACTIVE`; redacted configuration evidence committed |
 | 2 | Enable Kinesis server-side encryption | ✅ ACHIEVED & VERIFIED | Success confirmation observed; AWS-managed `aws/kinesis` selected |
-| 3 | Create least-privilege ECS task and execution roles | 🟠 NEXT | IAM trust policies and policy simulator/access test |
-| 4 | Create ECS runtime for the Coinbase adapter | ⬜ NOT STARTED | Healthy task and CloudWatch logs |
+| 3 | Create least-privilege ECS task and execution roles | ✅ ACHIEVED & VERIFIED | Trust policies verified; exact-stream allow and wildcard-deny simulations passed |
+| 4 | Implement/test Kinesis sink, then publish to ECR and create ECS runtime | 🟠 NEXT | Local tests, versioned image, successful pull, runtime role assumption, healthy task and CloudWatch logs |
 | 5 | Prove Coinbase → ECS → Kinesis delivery | ⬜ NOT STARTED | Record counts, timestamps and unchanged JSON sample evidence |
 | 6 | Create Firehose and S3 Bronze delivery | ⬜ NOT STARTED | Buffered `JSON.GZIP` objects plus count reconciliation |
 
@@ -82,7 +113,10 @@ The first stream was created during a root-console learning session. Root MFA is
 
 ## Architecture interview preparation
 
-The completed Kinesis and KMS controls are converted into Beginner, Medium and Company-scale Scenario interview practice in [`08-kinesis-kms-architecture-interview-guide.md`](08-kinesis-kms-architecture-interview-guide.md).
+The completed controls are converted into Beginner, Medium and Company-scale Scenario interview practice:
+
+- [Kinesis and KMS architecture interview guide](08-kinesis-kms-architecture-interview-guide.md)
+- [ECS IAM architecture interview guide](09-ecs-iam-architecture-interview-guide.md)
 
 ![Kinesis completion and interview readiness](../architecture/kinesis-configuration-interview-readiness.svg)
 
