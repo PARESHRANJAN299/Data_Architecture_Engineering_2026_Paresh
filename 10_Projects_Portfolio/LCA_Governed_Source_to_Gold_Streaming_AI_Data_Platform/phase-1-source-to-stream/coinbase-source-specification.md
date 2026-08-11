@@ -39,14 +39,16 @@ Send one subscription message per channel:
 
 1. Validate the WebSocket envelope and supported channel.
 2. Record source message timestamp, receive timestamp, channel, and `sequence_num`.
-3. For `market_trades`, iterate through every trade in every event group.
-4. Produce one canonical event per trade.
+3. For `market_trades`, preserve the complete source message and nested trade arrays unchanged.
+4. Publish one raw source message per Kinesis record; do not rename, aggregate or cast business fields.
 5. Update heartbeat and connection metrics without publishing heartbeats as business events.
-6. Ignore unknown message types safely while emitting a compatibility metric and sampled diagnostic metadata.
+6. Ignore unsupported message types safely while emitting a compatibility metric and sampled diagnostic metadata.
 
-## Canonical mapping
+## Target Silver mapping
 
-| Canonical field | Coinbase source or rule |
+The following mapping is applied by Glue/Spark after Bronze, not by the source adapter before Kinesis.
+
+| Silver field | Coinbase source or rule |
 |---|---|
 | `event_id` | `coinbase.market_trade.{product_id}.{trade_id}` |
 | `event_type` | `market.trade` |
@@ -67,8 +69,8 @@ Send one subscription message per channel:
 
 ## Ordering, duplication and gaps
 
-- Kinesis ordering is scoped to one Coinbase product.
-- Producer retries can create duplicates; downstream consumers remain idempotent by `event_id`.
+- Kinesis ordering is scoped to the selected raw-message partition strategy.
+- Producer retries can create duplicate source messages; Silver deduplicates exploded trades using the deterministic trade identity.
 - Persist the last observed sequence per connection/channel where it improves diagnosis.
 - Do not treat `sequence_num` alone as proof of business completeness until live tests confirm its scope and reset behavior across reconnects.
 - A detected gap starts best-effort REST recovery and always produces a gap report.

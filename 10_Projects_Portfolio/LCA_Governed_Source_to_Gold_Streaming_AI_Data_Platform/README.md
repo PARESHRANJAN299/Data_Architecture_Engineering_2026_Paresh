@@ -12,7 +12,7 @@
 
 ## Mission
 
-Build a reusable AWS data backbone that onboards heterogeneous real-time sources, converts them into governed event contracts, delivers them reliably through a streaming platform, and produces trusted data for analytics and AI.
+Build a reusable AWS data backbone that transports source events reliably, preserves immutable source history in Bronze, standardizes governed datasets in Silver, and produces trusted data for analytics and AI.
 
 The Phase 1 source is locked to the **Coinbase Advanced Trade public WebSocket**. The adapter consumes `market_trades` and `heartbeats` for `BTC-USD` and `ETH-USD`. Coinbase is the proving source for a platform that can later support customer events, application telemetry, IoT feeds, transactions, and partner APIs.
 
@@ -26,7 +26,7 @@ The Phase 1 source is locked to the **Coinbase Advanced Trade public WebSocket**
 | Operational channel | `heartbeats` |
 | Initial products | `BTC-USD`, `ETH-USD` |
 | Kinesis ordering domain | `event_source + product_id` |
-| Canonical event identity | `coinbase.market_trade.{product_id}.{trade_id}` |
+| Silver trade identity | `coinbase.market_trade.{product_id}.{trade_id}` |
 | Authentication | Public channels; no credential required for the initial scope |
 | Source replay | Best-effort REST recovery plus Kinesis retention; no unsupported replay guarantee |
 
@@ -40,11 +40,11 @@ This architecture establishes a repeatable source-to-consumption framework:
 
 ```mermaid
 flowchart LR
-    S[External and internal sources] --> A[Reusable source adapters]
-    A --> C[Canonical event contract]
-    C --> K[Amazon Kinesis Data Streams]
-    K --> B[S3 Bronze]
-    B --> V[S3 Silver]
+    S[External and internal sources] --> A[Source adapters]
+    A --> R[Raw source records]
+    R --> K[Amazon Kinesis Data Streams]
+    K --> B[S3 Bronze raw history]
+    B --> V[Standardized Silver contracts]
     V --> G[Gold data products]
     G --> Q[Analytics, APIs, ML and AI]
 ```
@@ -54,16 +54,15 @@ flowchart LR
 ```mermaid
 flowchart LR
     SRC[Coinbase Advanced Trade<br/>market_trades + heartbeats] --> ECS[ECS Fargate source adapter]
-    ECS --> VAL[Contract validation<br/>Glue Schema Registry]
-    VAL -->|valid| KDS[Kinesis Data Streams]
-    VAL -->|invalid| QUAR[S3 quarantine]
+    ECS -->|raw Coinbase JSON| KDS[Kinesis Data Streams]
     ECS -->|delivery exhausted| DLQ[SQS dead-letter queue]
     ECS -. checkpoints and idempotency .-> DDB[DynamoDB control state]
 
     KDS --> FH[Amazon Data Firehose]
-    FH --> BR[S3 Bronze<br/>immutable events]
+    FH --> BR[S3 Bronze<br/>immutable source JSON.GZIP]
     BR --> ETL[Glue / Spark / Flink]
-    ETL --> SI[Silver Iceberg tables]
+    ETL -->|valid standardized rows| SI[Silver Iceberg tables]
+    ETL -->|quality rejected| QUAR[S3 quality quarantine]
     SI --> TR[dbt / Glue transforms]
     TR --> GO[Gold data products]
     GO --> ATH[Athena]
@@ -85,6 +84,7 @@ flowchart LR
 | Governance control plane | [Open PNG](architecture/governance-control-plane.png) |
 | Automated delivery flow | [Open PNG](architecture/automated-delivery-flow.png) |
 | Iceberg logical-table backend | [Open SVG](architecture/iceberg-logical-table-backend.svg) |
+| Phase 1 complete source-to-Silver flow | [Open SVG](architecture/phase-1-source-to-silver-complete-flow.svg) |
 
 ### Iceberg logical-table backend
 
@@ -94,7 +94,7 @@ flowchart LR
 
 | Phase | Status | Outcome | Primary technologies | Exit evidence |
 |---|---|---|---|---|
-| 1. Source to Stream | **🟠 IN PROGRESS** | Reliable, governed Coinbase trade ingestion | Coinbase Advanced Trade, ECS Fargate, Glue Schema Registry, Kinesis, SQS DLQ, DynamoDB control state, CloudWatch, Terraform | Reconnect, heartbeat, retry, gap reporting, schema compatibility, zero unexplained loss in controlled tests |
+| 1. Source to Stream | **🟠 IN PROGRESS** | Reliable transport of unchanged Coinbase messages | Coinbase Advanced Trade, ECS Fargate, Kinesis, SQS DLQ, DynamoDB control state, CloudWatch, Terraform | Reconnect, heartbeat, retry, gap reporting and zero unexplained loss in controlled tests |
 | 2. Bronze to Silver | ⚪ PLANNED | Immutable raw history and trustworthy datasets | Amazon Data Firehose, S3, Glue, Spark/Flink, Apache Iceberg, Glue Data Quality | Count reconciliation, deterministic deduplication, late-data handling, reproducible reprocessing |
 | 3. Silver to Gold | ⚪ PLANNED | Governed business value and safe AI consumption | dbt/Glue, Athena, Redshift Serverless, QuickSight, SageMaker, Bedrock, Lake Formation | Approved metrics, lineage, role-based access, query SLOs, evaluated AI outputs |
 
@@ -118,8 +118,9 @@ flowchart LR
 | [`docs/03-technology-decisions.md`](docs/03-technology-decisions.md) | AWS service selection, alternatives, pros, cons, and triggers |
 | [`docs/04-non-functional-requirements.md`](docs/04-non-functional-requirements.md) | Proposed reliability, performance, security, recovery, and cost SLOs |
 | [`docs/05-delivery-roadmap.md`](docs/05-delivery-roadmap.md) | Three phases, work increments, gates, and evidence |
+| [`docs/06-phase-1-source-to-silver-explainer.md`](docs/06-phase-1-source-to-silver-explainer.md) | Complete source-to-Silver backend, resolved questions and deployment proof |
 | [`governance/`](governance/) | Governance operating model, control matrix, and approval gates |
-| [`contracts/`](contracts/) | Canonical JSON Schema, sample event, and contract metadata |
+| [`contracts/`](contracts/) | Raw transport rules, target Silver JSON Schema, sample event, and contract metadata |
 | [`automation/`](automation/) | CI/CD, infrastructure, schema, security, and data-quality automation |
 | [`architecture/`](architecture/) | Presentation-ready architecture, governance, and automation diagrams |
 | [`phase-1-source-to-stream/`](phase-1-source-to-stream/) | **IN PROGRESS** — active Coinbase source-to-stream implementation |
@@ -131,7 +132,7 @@ flowchart LR
 
 **🔒 Source locked:** Coinbase Advanced Trade public WebSocket using `market_trades` and `heartbeats` for `BTC-USD` and `ETH-USD`.
 
-Phase 1 is the active build. Source selection, architecture, governance baseline, canonical mapping, and the initial contract are complete and repository-validated. Live Coinbase connectivity, adapter runtime, AWS infrastructure, deployment, and operational evidence have not yet passed their tests. Phases 2 and 3 remain target-state roadmaps until the Phase 1 gate passes.
+Phase 1 is the active build. Source selection, raw-transport architecture, governance baseline, source contract, and target Silver mapping are complete and repository-validated. Live Coinbase connectivity, adapter runtime, AWS infrastructure, deployment, and operational evidence have not yet passed their tests. Phases 2 and 3 remain target-state roadmaps until the Phase 1 gate passes.
 
 ## Phase 1 execution tracker
 
@@ -146,7 +147,7 @@ Phase 1 is the active build. Source selection, architecture, governance baseline
 | 1 | Problem statement, scope and proposed outcomes | ✅ ACHIEVED & VERIFIED | Architecture documents and internal links validated |
 | 2 | Coinbase source decision | ✅ ACHIEVED & VERIFIED — **LOCKED** | ADR-004 accepted; endpoint, channels and products documented from official sources |
 | 3 | Target architecture, governance controls and AWS service decisions | ✅ ACHIEVED & VERIFIED | ADR set, control matrix, diagrams and presentation structural checks passed |
-| 4 | Canonical event and Coinbase data contract | ✅ ACHIEVED & VERIFIED — design baseline | JSON/YAML parse checks and deterministic sample identity/partition mapping passed; live fixture validation remains Step 5 |
+| 4 | Raw Coinbase transport contract and target Silver mapping | ✅ ACHIEVED & VERIFIED — design baseline | JSON/YAML parse checks passed; raw-payload and live-fixture validation remain Step 5 |
 | 5 | Local Coinbase connectivity spike and captured fixtures | 🟠 **NEXT STEP** | Must prove subscribe, heartbeat, multi-trade parsing, reconnect and safe fixture capture |
 | 6 | Containerized local source adapter | ⬜ NOT STARTED | Unit, contract and container smoke tests required |
 | 7 | Kinesis producer and reconciliation consumer | ⬜ NOT STARTED | Local/AWS integration, partial-failure, duplicate and replay tests required |
@@ -160,7 +161,7 @@ Phase 1 is the active build. Source selection, architecture, governance baseline
 1. Create the local adapter and test directory structure.
 2. Connect to Coinbase and subscribe to both locked channels.
 3. Capture sanitized fixtures for heartbeat, single-trade and multi-trade messages.
-4. Implement canonical mapping without floating-point conversion of `price` or `size`.
+4. Prove the Coinbase message is passed unchanged into the raw transport record; preserve `price` and `size` exactly as source strings.
 5. Add reconnect, stale-heartbeat, duplicate, malformed-message and sequence-discontinuity tests.
 6. Containerize and pass the local smoke test before creating AWS resources.
 
@@ -169,3 +170,15 @@ The detailed implementation order and definition of done are maintained in [`pha
 ## Definition of portfolio quality
 
 This project earns credibility through evidence rather than diagrams alone: reproducible infrastructure, failure-injection results, reconciliation reports, ADRs, cost estimates, security controls, runbooks, dashboards, and a traceable path from source event to business metric.
+
+## Phase -1
+
+### Complete entry flow: Coinbase source to Silver Iceberg
+
+![Phase 1 source-to-Silver complete backend flow](architecture/phase-1-source-to-silver-complete-flow.svg)
+
+The one-page view explains the complete backend behavior: Coinbase messages remain in source JSON through Kinesis and S3 Bronze; Firehose batches many records into immutable objects; Glue/Spark reads all new objects for the dataset and creates standardized Silver rows; Glue Catalog and Iceberg metadata allow Athena/Spark to resolve many physical Parquet files as one logical table.
+
+This is the end-to-end learning and deployment view. The execution tracker above remains the authority for what has actually been built and verified.
+
+The detailed questions, answers, service responsibilities, deployment order, tests and Silver business-approval loop are documented in [`docs/06-phase-1-source-to-silver-explainer.md`](docs/06-phase-1-source-to-silver-explainer.md).

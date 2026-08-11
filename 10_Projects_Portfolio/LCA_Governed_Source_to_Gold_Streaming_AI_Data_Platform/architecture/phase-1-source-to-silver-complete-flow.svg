@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1120" viewBox="0 0 1800 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Phase 1 source-to-Silver complete backend flow</title>
+  <desc id="desc">Coinbase raw JSON flows through ECS Fargate, Kinesis, Firehose, and S3 Bronze. Glue Spark reads many Bronze objects and writes one logical Silver Iceberg table. Glue Catalog, Iceberg metadata, snapshots, manifests, and Parquet files allow Athena and Spark to resolve and query that table.</desc>
+  <defs>
+    <marker id="ao" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12 Z" fill="#ff9900"/></marker>
+    <marker id="at" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12 Z" fill="#18bfa3"/></marker>
+    <marker id="ab" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12 Z" fill="#3b82f6"/></marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#102233" flood-opacity="0.12"/></filter>
+    <style>
+      .title{font:700 46px Arial,sans-serif;fill:#102233}.sub{font:400 21px Arial,sans-serif;fill:#60758a}
+      .lane{font:700 17px Arial,sans-serif;letter-spacing:1.2px}.num{font:700 18px Arial,sans-serif;fill:#fff;text-anchor:middle}
+      .bt{font:700 21px Arial,sans-serif;fill:#102233;text-anchor:middle}.tx{font:400 16px Arial,sans-serif;fill:#31485c;text-anchor:middle}
+      .sm{font:400 14px Arial,sans-serif;fill:#60758a;text-anchor:middle}.code{font:700 15px 'Courier New',monospace;fill:#102233;text-anchor:middle}
+      .white{fill:#fff}.left{text-anchor:start}.caps{font:700 16px Arial,sans-serif;letter-spacing:1px;text-anchor:middle}
+    </style>
+  </defs>
+  <rect width="1800" height="1120" fill="#f7fafc"/><rect width="18" height="1120" fill="#ff9900"/>
+  <text x="70" y="72" class="title">Phase -1 | Coinbase Source to One Logical Silver Table</text>
+  <text x="72" y="108" class="sub">Raw source JSON stays unchanged through Bronze. Standardization begins in Glue/Spark when Silver is created.</text>
+
+  <rect x="70" y="140" width="1660" height="38" rx="19" fill="#102d42"/>
+  <text x="900" y="165" class="caps white">ENTRY AND RAW TRANSPORT — NO BUSINESS TRANSFORMATION</text>
+
+  <g filter="url(#shadow)"><rect x="70" y="220" width="205" height="185" rx="20" fill="#fff" stroke="#cad7e1" stroke-width="2"/></g>
+  <circle cx="98" cy="245" r="19" fill="#ff9900"/><text x="98" y="252" class="num">1</text>
+  <text x="173" y="263" class="bt">Coinbase WebSocket</text><text x="173" y="301" class="code">market_trades</text>
+  <text x="173" y="331" class="tx">One message may contain</text><text x="173" y="355" class="tx">multiple trade events</text>
+  <text x="173" y="386" class="sm">Source JSON is authoritative</text>
+
+  <line x1="288" y1="312" x2="338" y2="312" stroke="#ff9900" stroke-width="7" marker-end="url(#ao)"/>
+  <g filter="url(#shadow)"><rect x="355" y="220" width="205" height="185" rx="20" fill="#ffd08a" stroke="#ff9900" stroke-width="2"/></g>
+  <circle cx="383" cy="245" r="19" fill="#ff9900"/><text x="383" y="252" class="num">2</text>
+  <text x="457" y="263" class="bt">ECS Fargate</text><text x="457" y="300" class="tx">connect · subscribe</text><text x="457" y="327" class="tx">heartbeat · reconnect</text>
+  <text x="457" y="360" class="tx">Pass raw JSON unchanged</text><text x="457" y="387" class="sm">No rename or aggregation</text>
+
+  <line x1="573" y1="312" x2="623" y2="312" stroke="#ff9900" stroke-width="7" marker-end="url(#ao)"/>
+  <g filter="url(#shadow)"><rect x="640" y="220" width="205" height="185" rx="20" fill="#102d42" stroke="#102d42" stroke-width="2"/></g>
+  <circle cx="668" cy="245" r="19" fill="#ff9900"/><text x="668" y="252" class="num">3</text>
+  <text x="742" y="263" class="bt white">Kinesis</text><text x="742" y="300" class="tx white">Many streaming records</text><text x="742" y="328" class="tx white">retained for replay</text>
+  <text x="742" y="362" class="tx white">One raw message per record</text><text x="742" y="388" class="sm white">Not an S3 file per event</text>
+
+  <line x1="858" y1="312" x2="908" y2="312" stroke="#ff9900" stroke-width="7" marker-end="url(#ao)"/>
+  <g filter="url(#shadow)"><rect x="925" y="220" width="205" height="185" rx="20" fill="#d7e6ff" stroke="#3b82f6" stroke-width="2"/></g>
+  <circle cx="953" cy="245" r="19" fill="#3b82f6"/><text x="953" y="252" class="num">4</text>
+  <text x="1027" y="263" class="bt">Data Firehose</text><text x="1027" y="300" class="tx">Buffer many records</text><text x="1027" y="328" class="tx">by time or size</text>
+  <text x="1027" y="362" class="tx">Compress and deliver</text><text x="1027" y="388" class="sm">Creates a new object per flush</text>
+
+  <line x1="1143" y1="312" x2="1193" y2="312" stroke="#3b82f6" stroke-width="7" marker-end="url(#ab)"/>
+  <g filter="url(#shadow)"><rect x="1210" y="205" width="250" height="215" rx="20" fill="#fff" stroke="#e95d72" stroke-width="2"/></g>
+  <circle cx="1238" cy="230" r="19" fill="#e95d72"/><text x="1238" y="237" class="num">5</text>
+  <text x="1335" y="255" class="bt">S3 Bronze</text><text x="1335" y="285" class="sm">source / date / hour prefix</text>
+  <rect x="1243" y="306" width="184" height="28" rx="6" fill="#fde1e6" stroke="#e95d72"/><text x="1335" y="325" class="code">batch-001.json.gz</text>
+  <rect x="1243" y="342" width="184" height="28" rx="6" fill="#fde1e6" stroke="#e95d72"/><text x="1335" y="361" class="code">batch-002.json.gz</text>
+  <rect x="1243" y="378" width="184" height="28" rx="6" fill="#fde1e6" stroke="#e95d72"/><text x="1335" y="397" class="code">batch-010.json.gz</text>
+
+  <line x1="1473" y1="312" x2="1523" y2="312" stroke="#18bfa3" stroke-width="7" marker-end="url(#at)"/>
+  <g filter="url(#shadow)"><rect x="1540" y="220" width="190" height="185" rx="20" fill="#c9f2e8" stroke="#18bfa3" stroke-width="2"/></g>
+  <circle cx="1568" cy="245" r="19" fill="#18bfa3"/><text x="1568" y="252" class="num">6</text>
+  <text x="1635" y="263" class="bt">Glue / Spark</text><text x="1635" y="300" class="tx">Read new Bronze files</text><text x="1635" y="327" class="tx">explode trade arrays</text><text x="1635" y="354" class="tx">rename · cast · quality</text><text x="1635" y="382" class="sm">First standardization point</text>
+
+  <path d="M1635 420 L1635 478 L1460 478" fill="none" stroke="#18bfa3" stroke-width="7" marker-end="url(#at)"/>
+  <g filter="url(#shadow)"><rect x="1140" y="450" width="300" height="135" rx="20" fill="#c9f2e8" stroke="#18bfa3" stroke-width="3"/></g>
+  <circle cx="1168" cy="475" r="19" fill="#18bfa3"/><text x="1168" y="482" class="num">7</text>
+  <text x="1290" y="492" class="bt">Silver Iceberg table</text><text x="1290" y="527" class="code">silver.fact_market_trade</text><text x="1290" y="557" class="sm">One logical standardized dataset</text>
+
+  <rect x="70" y="625" width="1660" height="38" rx="19" fill="#102d42"/>
+  <text x="900" y="650" class="caps white">HOW THE QUERY ENGINE FINDS THE PHYSICAL PARQUET FILES</text>
+
+  <g filter="url(#shadow)"><rect x="80" y="715" width="275" height="160" rx="18" fill="#102d42"/></g>
+  <text x="217" y="758" class="bt white">Athena / Spark</text><text x="217" y="798" class="code white">SELECT * FROM</text><text x="217" y="829" class="code white">silver.fact_market_trade</text><text x="217" y="856" class="sm white">Query one table name</text>
+  <line x1="370" y1="795" x2="455" y2="795" stroke="#18bfa3" stroke-width="7" marker-end="url(#at)"/>
+
+  <g filter="url(#shadow)"><rect x="475" y="715" width="290" height="160" rx="18" fill="#d7e6ff" stroke="#3b82f6" stroke-width="2"/></g>
+  <text x="620" y="758" class="bt">Glue Data Catalog</text><text x="620" y="798" class="code">silver.fact_market_trade</text><text x="620" y="831" class="tx">Stores table entry</text><text x="620" y="856" class="sm">Points to current metadata JSON</text>
+  <line x1="780" y1="795" x2="865" y2="795" stroke="#3b82f6" stroke-width="7" marker-end="url(#ab)"/>
+
+  <g filter="url(#shadow)"><rect x="885" y="715" width="260" height="160" rx="18" fill="#fff" stroke="#3b82f6" stroke-width="2"/></g>
+  <text x="1015" y="758" class="bt">Iceberg metadata</text><text x="1015" y="798" class="code">metadata-v3.json</text><text x="1015" y="831" class="tx">Schema · partitions</text><text x="1015" y="856" class="sm">Current snapshot pointer</text>
+  <line x1="1160" y1="795" x2="1245" y2="795" stroke="#3b82f6" stroke-width="7" marker-end="url(#ab)"/>
+
+  <g filter="url(#shadow)"><rect x="1265" y="715" width="210" height="160" rx="18" fill="#fff" stroke="#8398aa" stroke-width="2"/></g>
+  <text x="1370" y="758" class="bt">Manifests</text><text x="1370" y="798" class="code">snapshot-003</text><text x="1370" y="829" class="sm">manifest-list.avro</text><text x="1370" y="854" class="sm">manifest-001.avro</text>
+  <line x1="1490" y1="795" x2="1540" y2="795" stroke="#3b82f6" stroke-width="7" marker-end="url(#ab)"/>
+
+  <g filter="url(#shadow)"><rect x="1560" y="695" width="170" height="200" rx="18" fill="#fff" stroke="#cad7e1" stroke-width="2"/></g>
+  <text x="1645" y="733" class="bt">S3 Parquet</text><rect x="1580" y="760" width="130" height="27" rx="6" fill="#eef4ff" stroke="#3b82f6"/><text x="1645" y="778" class="code">part-001</text>
+  <rect x="1580" y="798" width="130" height="27" rx="6" fill="#eef4ff" stroke="#3b82f6"/><text x="1645" y="816" class="code">part-002</text>
+  <rect x="1580" y="836" width="130" height="27" rx="6" fill="#eef4ff" stroke="#3b82f6"/><text x="1645" y="854" class="code">part-003</text><text x="1645" y="885" class="sm">Physical files</text>
+
+  <rect x="80" y="930" width="1650" height="125" rx="20" fill="#fff" stroke="#cad7e1" stroke-width="2"/>
+  <text x="105" y="965" class="lane" fill="#17866e">THE FOUR ANSWERS THAT REMOVE THE CONFUSION</text>
+  <text x="105" y="998" class="tx left">1. Firehose buffers many Kinesis records; it does not create one S3 object per event.</text>
+  <text x="105" y="1027" class="tx left">2. S3 does not append to one permanent object; each Firehose flush creates another immutable Bronze object.</text>
+  <text x="910" y="998" class="tx left">3. Ten Bronze batch files for one dataset become one logical Silver table—not ten tables.</text>
+  <text x="910" y="1027" class="tx left">4. Glue Catalog finds the table; Iceberg metadata finds the Parquet files; the query engine returns one dataset.</text>
+  <text x="900" y="1090" class="caps" fill="#102233">RAW THROUGH BRONZE → STANDARDIZE IN SILVER → BUSINESS APPROVAL BEFORE GOLD</text>
+</svg>

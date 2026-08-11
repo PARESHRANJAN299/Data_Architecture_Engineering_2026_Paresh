@@ -12,7 +12,7 @@ The earlier design placed all events in DynamoDB and used a poller to publish th
 
 - Publish directly from the adapter to Kinesis with bounded retries.
 - Move exhausted delivery to SQS DLQ for investigation and controlled redrive.
-- Store invalid contracts in S3 quarantine.
+- Store unparseable transport payloads and rejected Silver-quality records in purpose-specific S3 quarantine prefixes.
 - Use DynamoDB only for checkpoints, idempotency keys, source configuration, and explicit control state.
 
 ## Consequences

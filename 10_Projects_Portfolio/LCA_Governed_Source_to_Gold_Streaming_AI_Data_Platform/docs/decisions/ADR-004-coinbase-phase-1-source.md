@@ -15,8 +15,8 @@ Use the Coinbase Advanced Trade public WebSocket endpoint `wss://advanced-trade-
 - Consume `market_trades` as the business channel.
 - Consume `heartbeats` as the connection-health channel.
 - Start with `BTC-USD` and `ETH-USD`.
-- Emit one canonical `market.trade` event per Coinbase trade.
-- Partition Kinesis by `coinbase.advanced_trade#{product_id}`.
+- Preserve one complete Coinbase `market_trades` source message per Kinesis record through Bronze.
+- Apply trade explosion, deterministic identity and standardization when creating Silver.
 - Defer the stateful `level2` order book until the market-trade path passes Gate 1.
 - Use public REST market-trade data only for best-effort gap recovery; do not claim guaranteed source replay.
 

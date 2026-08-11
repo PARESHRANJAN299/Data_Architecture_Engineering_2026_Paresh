@@ -5,7 +5,8 @@
 | No credentials in code | Task roles, Secrets Manager, protected branches | Secret scanning and CloudTrail review | CI result, secret inventory | 1 |
 | Least-privilege runtime | Dedicated IAM producer role and scoped resource policies | Access Analyzer and denied-action alarms | Reviewed policy and access test | 1 |
 | Encrypted data | TLS and KMS-encrypted Kinesis, SQS, DynamoDB, S3 | Config/security findings | Key policy and configuration export | 1 |
-| Valid contracts | Glue Schema Registry compatibility policy | Rejection/quarantine metrics | Contract-test report | 1 |
+| Raw source preservation | Versioned source contract and payload-preservation rule | Source/Kinesis/Bronze comparison | Raw-payload test report | 1–2 |
+| Valid Silver contracts | Approved Silver schema and Glue/Spark validation | Quality rejection metrics | Silver contract-test report | 2 |
 | Approved external source | Versioned Coinbase source contract and allowlisted channels/products | Endpoint/schema/rate-limit review before release | ADR-004 and source-review record | 1 |
 | Source-gap accountability | Sequence tracking, bounded reconnect and explicit recovery policy | Heartbeat-age and sequence-gap alarms | Gap report and reconciliation evidence | 1 |
 | Accountable events | Stable identity, structured outcomes | Reconciliation and missing-state alarm | Reconciliation report | 1–2 |

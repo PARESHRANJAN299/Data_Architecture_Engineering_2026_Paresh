@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.org/lca/contracts/canonical-event/1-0-0",
-  "title": "LCA Canonical Event",
+  "$id": "https://example.org/lca/contracts/target-silver-event/1-0-0",
+  "title": "LCA Target Silver Market Event",
   "type": "object",
   "additionalProperties": false,
   "required": [

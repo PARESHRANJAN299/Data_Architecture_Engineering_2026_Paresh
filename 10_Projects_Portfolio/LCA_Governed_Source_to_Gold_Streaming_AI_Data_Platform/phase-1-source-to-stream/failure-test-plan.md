@@ -5,9 +5,10 @@
 | Source disconnect | Terminate network/session | Bounded backoff and reconnect; gap identified | Timeline and gap report |
 | Stale heartbeat | Suppress or stop heartbeat processing | Connection is marked unhealthy and alarm fires | Heartbeat-age metric and alarm evidence |
 | Coinbase sequence gap | Drop one source message in the test adapter | Gap is detected; best-effort REST recovery or explicit unrecovered-gap record | Gap report and recovery decision |
-| Multi-trade message | Provide one message containing multiple trades | Exactly one canonical event is produced per trade | Fixture and count reconciliation |
+| Multi-trade message | Provide one message containing multiple trades | One unchanged Kinesis/Bronze source record is preserved; Silver later produces one row per trade | Raw-payload comparison and Silver count reconciliation |
 | Task failure | Stop active ECS task | Service replaces task and restores ingestion | ECS events and recovery time |
-| Invalid payload | Remove required field/change type | Event quarantined; healthy flow continues | Object, metric, and correlation ID |
+| Unparseable transport payload | Supply malformed JSON or an unreadable envelope | Raw transport record is quarantined; healthy flow continues | Object, metric, and correlation ID |
+| Silver business-field failure | Remove a required trade field or change its type | Bronze remains unchanged; rejected Silver row and reason are recorded | Quality report and rejected-row evidence |
 | Kinesis partial failure | Stub failed record responses | Retry only failed records | Unit/integration report |
 | Throttling | Constrain/test producer throughput | Backoff; alarm; no retry storm | Metrics and logs |
 | Duplicate delivery | Replay identical `event_id` | Downstream idempotency preserves one result | Reconciliation result |

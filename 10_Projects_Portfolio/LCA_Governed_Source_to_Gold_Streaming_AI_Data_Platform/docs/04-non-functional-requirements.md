@@ -12,8 +12,9 @@ These are design targets for validation. A target becomes an achieved SLO only a
 | Source reconnect | Bounded exponential backoff with jitter; no retry storm | Connection-state metrics and logs |
 | Coinbase heartbeat health | Stale heartbeat is detected within the approved test threshold | Last-heartbeat-age metric and alarm |
 | Source gap accountability | Every detected Coinbase sequence gap is recovered or explicitly reported as unrecovered | Gap register and reconciliation evidence |
-| Schema enforcement | 100% of published events pass the registered contract | Producer validation metric |
-| Invalid-event handling | 100% quarantined with safe reason and correlation ID | Quarantine inventory |
+| Raw payload preservation | 100% of accepted source messages remain business-field equivalent through Bronze | Source/Kinesis/Bronze payload comparison |
+| Silver schema enforcement | 100% of committed Silver rows pass the approved standard contract | Glue/Spark quality report |
+| Invalid-record handling | Transport failures or Silver quality failures are quarantined with safe reason and correlation | Quarantine inventory |
 | Duplicate safety | Duplicate input does not change final Silver result | Phase 2 idempotency test |
 | Infrastructure reproducibility | Clean environment deploys from version-controlled IaC | CI plan/apply evidence |
 | Security | No long-lived credentials in code, image, state output, or logs | Secret scanning and access review |
@@ -59,7 +60,7 @@ Load tests must include normal, burst, hot-key, throttling, reconnect, malformed
 
 ## Observability requirements
 
-Every event carries `event_id`, `correlation_id`, source time, ingestion time, schema version, and source. Dashboards and alarms cover:
+Transport telemetry carries source, connection, sequence and ingestion timing. Standardized Silver rows carry deterministic trade identity, source time, ingestion time, schema version and source. Dashboards and alarms cover:
 
 - connection status and reconnect count;
 - last Coinbase heartbeat age and detected sequence gaps;

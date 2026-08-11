@@ -20,8 +20,8 @@ Organizations receive continuously changing data from operational applications, 
 
 Create a governed, reusable AWS streaming platform with four stable interfaces:
 
-1. **Source adapter interface** — connects to a source and produces a canonical envelope.
-2. **Streaming contract** — defines identity, ordering, time, schema version, classification, and payload.
+1. **Source adapter interface** — connects to a source and transports the source message without business transformation.
+2. **Raw streaming contract** — defines source, transport, ordering, timing and payload-preservation behavior.
 3. **Medallion data contract** — preserves raw history and progressively promotes trustworthy data.
 4. **Consumption contract** — publishes approved data products for analytics, applications, ML, and AI.
 
@@ -44,7 +44,7 @@ The first source is the Coinbase Advanced Trade public WebSocket at `wss://advan
 - `market_trades` supplies the business events.
 - `heartbeats` proves connection health and drives operational metrics.
 - `BTC-USD` and `ETH-USD` are the initial product allowlist.
-- One Coinbase trade becomes one canonical `market.trade` event.
+- One Coinbase `market_trades` message remains one raw transport record through Bronze; Silver later explodes it into individual trade rows.
 - `product_id` defines the per-instrument Kinesis ordering domain.
 - Coinbase REST recovery is best-effort; Phase 1 does not claim source-side historical replay.
 
@@ -69,9 +69,9 @@ These are target outcomes to validate; they are not claimed as achieved until ev
 ### Phase 1 in scope
 
 - one Coinbase Advanced Trade `market_trades` source adapter on ECS Fargate;
-- canonical event envelope and schema compatibility policy;
+- raw source transport contract and target Silver schema policy;
 - Kinesis Data Streams as the real-time backbone;
-- invalid-event quarantine and exhausted-delivery DLQ;
+- unparseable-transport quarantine and exhausted-delivery DLQ;
 - DynamoDB for checkpoints, idempotency, and control state—not as the default event queue;
 - Terraform, CI/CD, IAM, KMS, Secrets Manager, CloudWatch, CloudTrail, tagging, and budgets;
 - failure tests, runbook, evidence, and an architecture approval gate.

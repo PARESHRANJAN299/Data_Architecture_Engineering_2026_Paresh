@@ -5,7 +5,7 @@ Implementation begins only after Gate 1.
 ## Outcome
 
 - Amazon Data Firehose delivers encrypted, compressed, partitioned Bronze objects.
-- Bronze retains the canonical envelope and original source payload.
+- Bronze retains the original Coinbase source message and transport metadata without business standardization.
 - Glue Catalog makes datasets discoverable.
 - Glue/Spark produces Silver Iceberg tables.
 - Silver standardizes types and time, deduplicates, validates, and records quality outcomes.

@@ -39,12 +39,12 @@ The selections below are the architecture baseline. Each remains subject to proo
 | DynamoDB event buffer | Queryable state and conditional writes | Polling, write amplification, ordering, TTL and cleanup complexity | Not the default queue |
 | S3 store-and-forward | Cheapest long retention and replay | Higher latency and object batching complexity | Use for quarantine and durable raw history |
 
-## Schema technology
+## Silver schema technology
 
 | Option | Strengths | Limitations | Decision |
 |---|---|---|---|
-| Glue Schema Registry | Native Kinesis integration; compatibility modes; Avro, JSON Schema, Protobuf | AWS coupling and language-integration considerations | **Selected** |
-| JSON Schema in application only | Language-neutral and transparent | Governance and compatibility enforcement become custom | Keep canonical schema in Git as source |
+| Glue Schema Registry | Compatibility modes and governed schema versions | AWS coupling and language-integration considerations | Evaluate for standardized Silver/event contracts; not used to rewrite Bronze source JSON |
+| JSON Schema in Git | Language-neutral and transparent | Compatibility enforcement requires CI/runtime integration | **Selected source of truth for target Silver contract** |
 | Confluent Schema Registry | Mature Kafka ecosystem | Additional platform and best fit with Kafka/MSK | Revisit if MSK becomes backbone |
 
 ## Bronze delivery

@@ -12,11 +12,11 @@ market_trades + heartbeats | BTC-USD + ETH-USD
         ↓
 ECS Fargate source adapter
         ↓
-Canonical JSON event + Glue Schema Registry
+Unchanged Coinbase source JSON
         ↓
 Amazon Kinesis Data Streams
 
-Invalid contract     → encrypted S3 quarantine
+Unparseable transport → encrypted S3 quarantine
 Delivery exhausted   → encrypted SQS DLQ
 Checkpoints/control  → DynamoDB
 Secrets              → Secrets Manager
@@ -30,7 +30,7 @@ Infrastructure       → Terraform + CI/CD
 | Step | Work item | Status | Required completion evidence |
 |---:|---|---|---|
 | 1 | Confirm Coinbase terms, endpoint, channels, products, rate limits and recovery limits | ✅ ACHIEVED | ADR-004, source specification and authoritative references |
-| 2 | Finalize the canonical contract, identity and partition rules | ✅ ACHIEVED | JSON/YAML checks and deterministic sample mapping |
+| 2 | Finalize raw transport rules and target Silver mapping | ✅ ACHIEVED | JSON/YAML checks and reviewed mapping specification |
 | 3 | Connect locally and capture sanitized source fixtures | 🟠 NEXT | Heartbeat, single-trade and multi-trade fixtures plus connection log |
 | 4 | Build and containerize the source adapter | ⬜ NOT STARTED | Unit, contract and container smoke tests |
 | 5 | Add Kinesis batching, partial-failure retry, backoff and metrics | ⬜ NOT STARTED | Integration and reconciliation report |
@@ -44,7 +44,7 @@ Completed architecture or contract design is not treated as proof that the runti
 ## Phase 1 backlog
 
 ```text
-src/                     source adapter and canonicalization
+src/                     source adapter and raw transport
 tests/                   unit, contract, load and failure tests
 infra/terraform/         network, ECS, Kinesis, SQS, S3, DynamoDB, IAM, KMS
 observability/           dashboards, alarms and queries
@@ -58,14 +58,15 @@ These implementation directories will be created incrementally. Empty scaffoldin
 
 - connect to `wss://advanced-trade-ws.coinbase.com`;
 - subscribe to `market_trades` and `heartbeats` for `BTC-USD` and `ETH-USD`;
-- publish one canonical event per trade, not one event per WebSocket message;
-- use `coinbase.market_trade.{product_id}.{trade_id}` as the deterministic event ID;
-- use `coinbase.advanced_trade#{product_id}` as the Kinesis partition key;
+- publish one unchanged Coinbase `market_trades` message per Kinesis record;
+- preserve nested event/trade arrays through Bronze;
+- use a stable transport partition key derived from the subscribed product scope;
 - convert heartbeats into health metrics rather than business events;
 - treat REST recovery as best-effort and emit a gap report when recovery cannot be proven;
+- defer trade explosion, standard column names, data types and quality rules to Silver;
 - defer `level2` order-book state until the market-trade path passes Gate 1.
 
-See [`coinbase-source-specification.md`](coinbase-source-specification.md) for the source-to-contract mapping.
+See [`coinbase-source-specification.md`](coinbase-source-specification.md) for the raw transport rules and target Silver mapping.
 
 ## Definition of done
 

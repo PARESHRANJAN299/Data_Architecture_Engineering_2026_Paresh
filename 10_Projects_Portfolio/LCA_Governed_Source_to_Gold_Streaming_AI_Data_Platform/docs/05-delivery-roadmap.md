@@ -14,7 +14,7 @@ Problem → Requirements → Alternatives → ADR → Build → Failure test →
 
 - lock Coinbase Advanced Trade `market_trades` and `heartbeats` for `BTC-USD` and `ETH-USD`;
 - record its ordering, batching, connection, and best-effort recovery behavior;
-- create the canonical JSON Schema and sample events;
+- create the raw Coinbase transport contract and target Silver schema;
 - define schema ownership and compatibility policy;
 - implement local validation and contract tests.
 
@@ -22,7 +22,7 @@ Problem → Requirements → Alternatives → ADR → Build → Failure test →
 
 - containerize a minimal Coinbase WebSocket adapter;
 - subscribe within the source connection window and monitor heartbeat age;
-- fan out each trade in a Coinbase message to one canonical event;
+- publish each complete Coinbase source message unchanged to Kinesis;
 - run it as an ECS Fargate service;
 - use task roles and Secrets Manager;
 - expose structured metrics without logging payloads.
@@ -36,7 +36,7 @@ Problem → Requirements → Alternatives → ADR → Build → Failure test →
 
 ### Increment 4: Failure and recovery
 
-- add S3 quarantine for invalid contracts;
+- add S3 quarantine for unparseable transport payloads and rejected Silver-quality records;
 - add SQS DLQ for exhausted delivery;
 - add DynamoDB checkpoints/control state only where the use case proves it;
 - execute reconnect, task-kill, throttling, duplicate, and malformed-event tests.
@@ -65,6 +65,7 @@ Phase 2 cannot start until:
 
 - configure Amazon Data Firehose to deliver compressed, partitioned Bronze objects;
 - preserve original payload and event metadata;
+- explode Coinbase event/trade arrays into one Silver row per trade;
 - catalog Bronze data;
 - create Silver Iceberg tables;
 - standardize timestamps and types;

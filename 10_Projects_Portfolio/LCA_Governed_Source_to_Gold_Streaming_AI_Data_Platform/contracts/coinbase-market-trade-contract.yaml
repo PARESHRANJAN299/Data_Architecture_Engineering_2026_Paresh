@@ -4,7 +4,7 @@ data_product: coinbase-market-trades
 owner:
   business: Paresh Ranjan Rout
   technical: Paresh Ranjan Rout
-purpose: Prove governed real-time source-to-Kinesis ingestion using public Coinbase trades.
+purpose: Prove governed raw source-to-Kinesis transport and define the target Silver trade contract.
 classification: public
 source:
   provider: Coinbase Advanced Trade
@@ -23,7 +23,12 @@ schema:
   name: market-trade
   version: 1.0.0
   compatibility: BACKWARD
+  enforcement_layer: silver
+transport:
+  payload_policy: preserve-complete-coinbase-message-unchanged-through-bronze
+  kinesis_record_policy: one-source-message-per-record
 identity:
+  enforcement_layer: silver
   event_id: "coinbase.market_trade.{product_id}.{trade_id}"
   partition_key: "coinbase.advanced_trade#{product_id}"
 quality:
