@@ -290,7 +290,7 @@ The first manually configured AWS service is complete for the current developmen
 | 3 | Create ECS task and execution roles | ✅ **ACHIEVED & VERIFIED** | Trust verified; exact-stream allow and wildcard-deny simulations passed; [redacted evidence](phase-1-source-to-stream/evidence/manual-ecs-iam-foundation.json) |
 | 3A | Validate ECS, ECR, Fargate and IAM runtime responsibilities | ✅ **ACHIEVED & VERIFIED — DESIGN** | Final numbered blueprint and question-driven explanation completed |
 | 4A | Implement and locally test `KinesisRawMessageSink` | ✅ **ACHIEVED & VERIFIED — LOCAL** | 4 focused tests and all 16 adapter tests passed; [evidence](phase-1-source-to-stream/evidence/local-kinesis-sink-test.json) |
-| 4B | Publish a secure versioned image to ECR | 🟠 **IN PROGRESS** | Repository created; `phase1-v1` pushed but rejected by the security gate; `phase1-v2` built locally and still requires container testing, ECR push and a passing scan |
+| 4B | Publish a secure versioned image to ECR | 🟠 **IN PROGRESS — SCAN RUNNING** | `phase1-v2` built, live-tested and pushed successfully; ECR security scan currently reports `IN_PROGRESS` |
 | 4C | Deploy image to ECS/Fargate | ⬜ **NOT STARTED** | Runtime role assumption, healthy task and CloudWatch logs required |
 | 5 | Prove Coinbase → ECS → Kinesis | ⬜ **NOT STARTED** | Count reconciliation and unchanged-message evidence required |
 | 6 | Add Firehose → S3 Bronze | ⬜ **NOT STARTED** | Buffered objects and source-to-Bronze reconciliation required |
@@ -414,6 +414,30 @@ Container  = running instance created from the image
 
 Docker does not place everything in the image automatically. During `docker build`, it reads the Dockerfile from top to bottom. `FROM` supplies the Linux and Python foundation, `RUN` installs required packages, `COPY` adds our source code, and `CMD` records the default command that a future container will execute. The image itself does not run; ECS/Fargate creates and runs a container from that image.
 
+### Latest implementation checkpoint — phase1-v2
+
+```text
+Changed the base image to Python 3.11.15 on Alpine 3.23
+    ↓
+Built phase1-v2 in CloudShell (81.2 MB)
+    ↓
+Started a container from phase1-v2
+    ↓
+Connected and subscribed to the Coinbase WebSocket
+    ↓
+Received exactly 1 live market message
+    ↓
+Wrote exactly 1 JSONL record with 0 quarantine and sequence errors
+    ↓
+Tagged phase1-v2 with the private ECR repository address
+    ↓
+Pushed phase1-v2 to ECR successfully
+    ↓
+ECR security scan started and currently reports IN_PROGRESS
+```
+
+Current decision: the image exists in ECR, but it is **not yet security-approved**. Step 4B remains in progress until the scan reports `COMPLETE` and its Critical and High findings are reviewed against the project security gate.
+
 > **Evidence boundary:** this diagram describes the intended Phase 1 runtime. The Kinesis stream, IAM roles, ECR repository, local container and individual permissions have been tested as recorded above. The complete ECS/Fargate runtime and end-to-end Coinbase-to-Kinesis delivery are not marked verified until their required deployment evidence passes.
 
 ### The architecture contains two different flows
@@ -454,7 +478,7 @@ AWS account
     └── Amazon ECR
         └── Private repository: lca-coinbase-adapter-dev
             ├── image tag: phase1-v1
-            └── image tag: phase1-v2, after that version is pushed
+            └── image tag: phase1-v2, pushed and awaiting scan completion
 ```
 
 AWS manages ECR's underlying physical servers and storage. The project manages repositories, image tags, encryption, scanning, lifecycle and access policies—not ECR's storage machines.

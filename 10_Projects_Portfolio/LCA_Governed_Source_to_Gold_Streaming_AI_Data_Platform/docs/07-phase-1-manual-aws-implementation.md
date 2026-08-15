@@ -141,7 +141,7 @@ Local evidence: [`local-kinesis-sink-test.json`](../phase-1-source-to-stream/evi
 | 3 | Create least-privilege ECS task and execution roles | ✅ ACHIEVED & VERIFIED | Trust policies verified; exact-stream allow and wildcard-deny simulations passed |
 | 3A | Validate ECS, ECR, Fargate and IAM runtime responsibilities | ✅ ACHIEVED & VERIFIED — DESIGN | Final numbered blueprint and question-driven explanation completed |
 | 4A | Implement and locally test `KinesisRawMessageSink` | ✅ ACHIEVED & VERIFIED — LOCAL | 4 focused tests and all 16 adapter tests passed; no AWS resource was changed |
-| 4B | Create ECR repository and publish a secure versioned image | 🟠 IN PROGRESS | Repository created; `phase1-v1` pushed but rejected by the security gate; `phase1-v2` built locally and still requires container testing, ECR push and a passing scan |
+| 4B | Create ECR repository and publish a secure versioned image | 🟠 IN PROGRESS — SCAN RUNNING | `phase1-v2` built, live-tested and pushed successfully; ECR security scan currently reports `IN_PROGRESS` |
 | 4C | Create ECS/Fargate runtime | ⬜ NOT STARTED | Successful pull, runtime role assumption, healthy task and CloudWatch logs |
 | 5 | Prove Coinbase → ECS → Kinesis delivery | ⬜ NOT STARTED | Record counts, timestamps and unchanged JSON sample evidence |
 | 6 | Create Firehose and S3 Bronze delivery | ⬜ NOT STARTED | Buffered `JSON.GZIP` objects plus count reconciliation |
@@ -221,14 +221,28 @@ ECR participates during deployment and task replacement. It is not part of the l
 
 ### Evidence boundary and immediate next test
 
-Completed evidence currently covers the Kinesis stream, encryption, manual Kinesis write/read test, IAM policies and simulations, ECR repository creation, local Coinbase capture, local container build and local container execution. The first ECR image scan found security issues, so that image is not approved for deployment.
+Completed evidence currently covers the Kinesis stream, encryption, manual Kinesis write/read test, IAM policies and simulations, ECR repository creation, local Coinbase capture, local container build and local container execution. The first ECR image, `phase1-v1`, was rejected after its scan found 4 Critical, 8 High and 6 Medium findings in base operating-system packages.
+
+The replacement image has now reached this checkpoint:
+
+```text
+phase1-v2 built in CloudShell (81.2 MB)
+    → container connected and subscribed to Coinbase
+    → 1 live message received
+    → 1 JSONL record written
+    → 0 quarantined messages and 0 sequence problems
+    → image tagged for the private ECR repository
+    → image pushed successfully to ECR
+    → security scan started: IN_PROGRESS
+```
+
+`phase1-v2` is stored in ECR but is not yet security-approved.
 
 The immediate next gate is:
 
 ```text
-Test phase1-v2 locally
-    → push phase1-v2 to ECR
-    → run the ECR security scan
+Wait for the phase1-v2 ECR scan to report COMPLETE
+    → review Critical and High findings
     → accept only if the required security threshold passes
     → then create the ECS Task Definition and ECS Service
 ```
