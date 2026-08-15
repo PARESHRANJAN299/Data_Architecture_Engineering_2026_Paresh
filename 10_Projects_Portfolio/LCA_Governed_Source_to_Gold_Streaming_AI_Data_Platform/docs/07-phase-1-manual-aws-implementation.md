@@ -141,8 +141,8 @@ Local evidence: [`local-kinesis-sink-test.json`](../phase-1-source-to-stream/evi
 | 3 | Create least-privilege ECS task and execution roles | ✅ ACHIEVED & VERIFIED | Trust policies verified; exact-stream allow and wildcard-deny simulations passed |
 | 3A | Validate ECS, ECR, Fargate and IAM runtime responsibilities | ✅ ACHIEVED & VERIFIED — DESIGN | Final numbered blueprint and question-driven explanation completed |
 | 4A | Implement and locally test `KinesisRawMessageSink` | ✅ ACHIEVED & VERIFIED — LOCAL | 4 focused tests and all 16 adapter tests passed; no AWS resource was changed |
-| 4B | Create ECR repository and publish a secure versioned image | 🟠 IN PROGRESS — SCAN RUNNING | `phase1-v2` built, live-tested and pushed successfully; ECR security scan currently reports `IN_PROGRESS` |
-| 4C | Create ECS/Fargate runtime | ⬜ NOT STARTED | Successful pull, runtime role assumption, healthy task and CloudWatch logs |
+| 4B | Create ECR repository and publish a secure versioned image | ✅ ACHIEVED & VERIFIED | `phase1-v2` built, live-tested and pushed; ECR basic scan completed successfully with no reported findings |
+| 4C | Create ECS/Fargate runtime | 🟠 NEXT | Create the Task Definition, start a healthy task, verify runtime role assumption and inspect CloudWatch logs |
 | 5 | Prove Coinbase → ECS → Kinesis delivery | ⬜ NOT STARTED | Record counts, timestamps and unchanged JSON sample evidence |
 | 6 | Create Firehose and S3 Bronze delivery | ⬜ NOT STARTED | Buffered `JSON.GZIP` objects plus count reconciliation |
 
@@ -233,18 +233,20 @@ phase1-v2 built in CloudShell (81.2 MB)
     → 0 quarantined messages and 0 sequence problems
     → image tagged for the private ECR repository
     → image pushed successfully to ECR
-    → security scan started: IN_PROGRESS
+    → ECR basic security scan completed: COMPLETE
+    → SeverityCounts returned an empty object: no findings reported
 ```
 
-`phase1-v2` is stored in ECR but is not yet security-approved.
+`phase1-v2` is stored in ECR and has passed the configured Phase 1 basic-scan gate. The empty `SeverityCounts` result is evidence that this scan reported no findings; it is not a claim that software can never contain risk.
 
 The immediate next gate is:
 
 ```text
-Wait for the phase1-v2 ECR scan to report COMPLETE
-    → review Critical and High findings
-    → accept only if the required security threshold passes
-    → then create the ECS Task Definition and ECS Service
+Create the ECS Task Definition
+    → select the immutable phase1-v2 ECR image
+    → assign the verified Task Role and Execution Role
+    → configure the CloudWatch awslogs driver
+    → then create the ECS Service on Fargate
 ```
 
 Full question-by-question explanation: [`README.md`](../README.md#phase-1-final-runtime-blueprint-and-question-driven-explanation).

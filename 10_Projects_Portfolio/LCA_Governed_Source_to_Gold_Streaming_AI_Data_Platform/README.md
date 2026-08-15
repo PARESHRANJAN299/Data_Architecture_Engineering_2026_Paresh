@@ -290,8 +290,8 @@ The first manually configured AWS service is complete for the current developmen
 | 3 | Create ECS task and execution roles | ✅ **ACHIEVED & VERIFIED** | Trust verified; exact-stream allow and wildcard-deny simulations passed; [redacted evidence](phase-1-source-to-stream/evidence/manual-ecs-iam-foundation.json) |
 | 3A | Validate ECS, ECR, Fargate and IAM runtime responsibilities | ✅ **ACHIEVED & VERIFIED — DESIGN** | Final numbered blueprint and question-driven explanation completed |
 | 4A | Implement and locally test `KinesisRawMessageSink` | ✅ **ACHIEVED & VERIFIED — LOCAL** | 4 focused tests and all 16 adapter tests passed; [evidence](phase-1-source-to-stream/evidence/local-kinesis-sink-test.json) |
-| 4B | Publish a secure versioned image to ECR | 🟠 **IN PROGRESS — SCAN RUNNING** | `phase1-v2` built, live-tested and pushed successfully; ECR security scan currently reports `IN_PROGRESS` |
-| 4C | Deploy image to ECS/Fargate | ⬜ **NOT STARTED** | Runtime role assumption, healthy task and CloudWatch logs required |
+| 4B | Publish a secure versioned image to ECR | ✅ **ACHIEVED & VERIFIED** | `phase1-v2` built, live-tested and pushed; ECR basic scan completed successfully with no reported findings |
+| 4C | Deploy image to ECS/Fargate | 🟠 **NEXT** | Create the Task Definition, start a healthy task, verify runtime role assumption and inspect CloudWatch logs |
 | 5 | Prove Coinbase → ECS → Kinesis | ⬜ **NOT STARTED** | Count reconciliation and unchanged-message evidence required |
 | 6 | Add Firehose → S3 Bronze | ⬜ **NOT STARTED** | Buffered objects and source-to-Bronze reconciliation required |
 
@@ -433,10 +433,12 @@ Tagged phase1-v2 with the private ECR repository address
     ↓
 Pushed phase1-v2 to ECR successfully
     ↓
-ECR security scan started and currently reports IN_PROGRESS
+ECR basic security scan completed successfully
+    ↓
+No vulnerability findings were reported
 ```
 
-Current decision: the image exists in ECR, but it is **not yet security-approved**. Step 4B remains in progress until the scan reports `COMPLETE` and its Critical and High findings are reviewed against the project security gate.
+Current decision: `phase1-v2` passed the configured ECR basic-scan gate and is approved for the Phase 1 ECS deployment step. An empty `SeverityCounts` result means that this scan reported no findings; it is evidence for this gate, not a claim that software can never contain risk.
 
 > **Evidence boundary:** this diagram describes the intended Phase 1 runtime. The Kinesis stream, IAM roles, ECR repository, local container and individual permissions have been tested as recorded above. The complete ECS/Fargate runtime and end-to-end Coinbase-to-Kinesis delivery are not marked verified until their required deployment evidence passes.
 
