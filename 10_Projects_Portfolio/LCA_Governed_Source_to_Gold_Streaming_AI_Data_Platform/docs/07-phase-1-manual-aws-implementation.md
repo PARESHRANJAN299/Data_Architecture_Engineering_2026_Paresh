@@ -139,8 +139,9 @@ Local evidence: [`local-kinesis-sink-test.json`](../phase-1-source-to-stream/evi
 | 2 | Enable Kinesis server-side encryption | ✅ ACHIEVED & VERIFIED | Success confirmation observed; AWS-managed `aws/kinesis` selected |
 | 2A | Manually write and read one Kinesis record | ✅ ACHIEVED & VERIFIED | CloudShell `PutRecord` succeeded with KMS; Data Viewer returned the expected test record |
 | 3 | Create least-privilege ECS task and execution roles | ✅ ACHIEVED & VERIFIED | Trust policies verified; exact-stream allow and wildcard-deny simulations passed |
+| 3A | Validate ECS, ECR, Fargate and IAM runtime responsibilities | ✅ ACHIEVED & VERIFIED — DESIGN | Final numbered blueprint and question-driven explanation completed |
 | 4A | Implement and locally test `KinesisRawMessageSink` | ✅ ACHIEVED & VERIFIED — LOCAL | 4 focused tests and all 16 adapter tests passed; no AWS resource was changed |
-| 4B | Create ECR repository and publish versioned image | 🟠 NEXT | Image URI, immutable version tag and successful scan evidence |
+| 4B | Create ECR repository and publish a secure versioned image | 🟠 IN PROGRESS | Repository created; `phase1-v1` pushed but rejected by the security gate; `phase1-v2` built locally and still requires container testing, ECR push and a passing scan |
 | 4C | Create ECS/Fargate runtime | ⬜ NOT STARTED | Successful pull, runtime role assumption, healthy task and CloudWatch logs |
 | 5 | Prove Coinbase → ECS → Kinesis delivery | ⬜ NOT STARTED | Record counts, timestamps and unchanged JSON sample evidence |
 | 6 | Create Firehose and S3 Bronze delivery | ⬜ NOT STARTED | Buffered `JSON.GZIP` objects plus count reconciliation |
@@ -159,6 +160,80 @@ The completed controls are converted into Beginner, Medium and Company-scale Sce
 - [ECS, ECR and Fargate Data Engineer/Architect interview guide](11-ecs-ecr-fargate-data-engineering-architecture-interview-guide.md)
 
 ![Kinesis completion and interview readiness](../architecture/kinesis-configuration-interview-readiness.svg)
+
+## Phase 1 architecture learning checkpoint — ACHIEVED & VERIFIED
+
+![Phase 1 final runtime blueprint](../architecture/phase-1-runtime-flow-numbered-blueprint.png)
+
+Editable diagram: [`phase-1-runtime-flow-numbered-blueprint.svg`](../architecture/phase-1-runtime-flow-numbered-blueprint.svg)
+
+This checkpoint records the architecture questions resolved before ECS/Fargate deployment. It verifies understanding of the design; it does not claim that the complete runtime has already been deployed.
+
+| Question | Confirmed answer |
+|---|---|
+| Where does ECR exist? | ECR is a separate AWS-managed regional service in the AWS account. It is not inside Fargate, ECS, EC2 or CloudShell. |
+| What does ECR store? | Private repositories store versioned container images such as `lca-coinbase-adapter-dev:phase1-v2`. |
+| Does ECR store an API endpoint? | No. ECR can store the packaged image for an API application, but API Gateway or an Application Load Balancer exposes the endpoint. |
+| Image versus container? | The image is the stored application package. A container is a running instance created from that image. |
+| What does Fargate do? | It supplies managed CPU, memory, networking and temporary task storage where the container runs. |
+| What does ECS Service do? | It maintains the desired task count. With desired count `1`, it requests a replacement task if the running task stops. |
+| What does the Task Role do? | It permits the Python process to call Kinesis `PutRecord` and `PutRecords` on the exact stream. The role never sends data itself. |
+| What does the Execution Role do? | It permits the ECS/Fargate platform to pull the image from ECR and deliver container logs to CloudWatch. The role never performs those actions itself. |
+| What goes to CloudWatch? | Operational stdout/stderr, connection events, errors and metrics—not the Coinbase market dataset. |
+
+### Deployment flow
+
+```text
+Python code + dependencies + Dockerfile
+    → CloudShell builds a versioned Docker image
+    → docker push stores that image in Amazon ECR
+    → ECS Task Definition references the exact ECR image URI
+    → Execution Role permits ECS to pull the image
+    → Fargate starts a container from the image
+    → Python starts inside the container
+```
+
+### Runtime data flow
+
+```text
+Coinbase WebSocket
+    → unchanged live JSON
+    → Python adapter inside the Fargate container
+    → Python calls Kinesis PutRecord or PutRecords
+    → Task Role authorizes the call
+    → Kinesis receives and temporarily retains the record
+```
+
+ECR participates during deployment and task replacement. It is not part of the live Coinbase-to-Kinesis message path.
+
+### Exact startup sequence
+
+1. The versioned image is stored in the private ECR repository.
+2. The ECS Task Definition names the image, Task Role, Execution Role, resources and log configuration.
+3. ECS Service requests one running task.
+4. The Execution Role authorizes the ECR image pull and CloudWatch log delivery.
+5. Fargate allocates the task's CPU, memory, networking and temporary storage.
+6. A container is created from the ECR image and the Python command starts.
+7. Python connects to Coinbase and receives live source JSON.
+8. The Task Role authorizes Python's write to the exact Kinesis stream.
+9. Container operational logs reach CloudWatch through the ECS `awslogs` driver.
+10. If the task stops, ECS requests a replacement task and repeats the startup process.
+
+### Evidence boundary and immediate next test
+
+Completed evidence currently covers the Kinesis stream, encryption, manual Kinesis write/read test, IAM policies and simulations, ECR repository creation, local Coinbase capture, local container build and local container execution. The first ECR image scan found security issues, so that image is not approved for deployment.
+
+The immediate next gate is:
+
+```text
+Test phase1-v2 locally
+    → push phase1-v2 to ECR
+    → run the ECR security scan
+    → accept only if the required security threshold passes
+    → then create the ECS Task Definition and ECS Service
+```
+
+Full question-by-question explanation: [`README.md`](../README.md#phase-1-final-runtime-blueprint-and-question-driven-explanation).
 
 ## AWS references
 

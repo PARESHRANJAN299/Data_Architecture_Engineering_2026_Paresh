@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Phase 1 Runtime Flow — Coinbase to Fargate and ECS to Kinesis</title>
+  <desc id="desc">A numbered architecture blueprint showing Coinbase live JSON entering a Python adapter inside a Docker container on an AWS Fargate task managed by an ECS service. The Python application uses its ECS task role permission to write to Kinesis. A separate execution role permits image pulls from ECR and log delivery to CloudWatch.</desc>
+  <defs>
+    <linearGradient id="page" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8fbff"/>
+      <stop offset="1" stop-color="#eef5fb"/>
+    </linearGradient>
+    <linearGradient id="ecsFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eff7ff"/>
+      <stop offset="1" stop-color="#dceeff"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#0b2440" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arrowOrange" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12 Z" fill="#f97316"/></marker>
+    <marker id="arrowBlue" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12 Z" fill="#2563eb"/></marker>
+    <marker id="arrowGreen" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0 0 L14 7 L0 14 Z" fill="#059669"/></marker>
+    <marker id="arrowPurple" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12 Z" fill="#7c3aed"/></marker>
+    <style>
+      text { font-family: Inter, Arial, sans-serif; fill: #102a43; }
+      .title { font-size: 39px; font-weight: 800; }
+      .section { font-size: 20px; font-weight: 800; fill: #17365d; letter-spacing: .5px; }
+      .boxTitle { font-size: 20px; font-weight: 800; }
+      .label { font-size: 16px; font-weight: 600; }
+      .small { font-size: 14px; font-weight: 500; }
+      .tiny { font-size: 13px; font-weight: 500; }
+      .number { font-size: 28px; font-weight: 900; fill: #fff; text-anchor: middle; dominant-baseline: middle; }
+      .center { text-anchor: middle; }
+      .white { fill: #fff; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#page)"/>
+  <text x="800" y="50" class="title center">Phase 1 Runtime Flow — Coinbase → Fargate/ECS → Kinesis</text>
+
+  <!-- Supporting deployment flow -->
+  <text x="35" y="88" class="section">SUPPORTING DEPLOYMENT FLOW</text>
+
+  <g filter="url(#shadow)">
+    <rect x="35" y="108" width="145" height="130" rx="15" fill="#fff" stroke="#f97316" stroke-width="3"/>
+    <rect x="218" y="108" width="150" height="130" rx="15" fill="#fff" stroke="#f97316" stroke-width="3"/>
+    <rect x="406" y="108" width="160" height="130" rx="15" fill="#fff" stroke="#f97316" stroke-width="3"/>
+    <rect x="610" y="92" width="290" height="166" rx="15" fill="#fff" stroke="#f97316" stroke-width="3"/>
+    <rect x="964" y="108" width="205" height="130" rx="15" fill="#fbf7ff" stroke="#7c3aed" stroke-width="3"/>
+    <rect x="1322" y="108" width="235" height="130" rx="15" fill="#fff" stroke="#db2777" stroke-width="3"/>
+  </g>
+
+  <text x="107" y="142" class="boxTitle center">Python code</text>
+  <text x="107" y="168" class="label center">+ libraries</text>
+  <text x="107" y="207" class="small center" fill="#f97316">Source package</text>
+
+  <text x="293" y="142" class="boxTitle center">Docker</text>
+  <text x="293" y="168" class="label center">builds image</text>
+  <text x="293" y="207" class="small center" fill="#f97316">Packages runtime</text>
+
+  <text x="486" y="142" class="boxTitle center">Amazon ECR</text>
+  <text x="486" y="168" class="label center">stores images</text>
+  <text x="486" y="207" class="small center">Does not run Python</text>
+
+  <text x="755" y="124" class="boxTitle center">ECS Task Definition</text>
+  <text x="755" y="148" class="label center">runtime blueprint</text>
+  <text x="635" y="179" class="tiny">• Image URI</text>
+  <text x="635" y="200" class="tiny">• CPU + memory</text>
+  <text x="635" y="221" class="tiny">• Startup command</text>
+  <text x="778" y="179" class="tiny">• Task role</text>
+  <text x="778" y="200" class="tiny">• Execution role</text>
+
+  <text x="1066" y="140" class="boxTitle center" fill="#6d28d9">ECS EXECUTION ROLE</text>
+  <text x="1066" y="168" class="small center">Used by ECS/Fargate</text>
+  <text x="1066" y="191" class="tiny center">Policy permits ECR image pull</text>
+  <text x="1066" y="214" class="tiny center">Policy permits CloudWatch log writes</text>
+  <text x="1066" y="234" class="tiny center" fill="#6d28d9">The role grants permission only</text>
+
+  <text x="1439" y="142" class="boxTitle center">Amazon CloudWatch</text>
+  <text x="1439" y="168" class="label center">Logs</text>
+  <text x="1439" y="198" class="small center">ECS log driver sends</text>
+  <text x="1439" y="220" class="small center">container stdout/stderr</text>
+
+  <path d="M180 173 H218" stroke="#f97316" stroke-width="7" marker-end="url(#arrowOrange)"/>
+  <path d="M368 173 H406" stroke="#f97316" stroke-width="7" marker-end="url(#arrowOrange)"/>
+  <path d="M566 173 H610" stroke="#f97316" stroke-width="7" marker-end="url(#arrowOrange)"/>
+
+  <!-- Task definition assigns the execution role to ECS/Fargate -->
+  <path d="M900 173 H964" fill="none" stroke="#7c3aed" stroke-width="4" marker-end="url(#arrowPurple)"/>
+  <text x="932" y="158" class="tiny center" fill="#6d28d9">executionRoleArn</text>
+
+  <!-- Exact execution-role permission connections -->
+  <path d="M1008 108 V78 H486 V108" fill="none" stroke="#7c3aed" stroke-width="4" stroke-dasharray="10 7" marker-end="url(#arrowPurple)"/>
+  <rect x="662" y="66" width="186" height="25" rx="12" fill="#f3e8ff"/>
+  <text x="755" y="84" class="tiny center" fill="#6d28d9">Permission: pull image</text>
+  <path d="M1169 173 H1322" fill="none" stroke="#7c3aed" stroke-width="4" stroke-dasharray="10 7" marker-end="url(#arrowPurple)"/>
+  <text x="1245" y="158" class="tiny center" fill="#6d28d9">Permission: write logs</text>
+
+  <rect x="937" y="270" width="620" height="48" rx="15" fill="#f3e8ff" stroke="#c4b5fd" stroke-width="2"/>
+  <text x="1247" y="291" class="small center" fill="#6d28d9">At task startup, ECS assumes this role and receives temporary credentials.</text>
+  <text x="1247" y="310" class="tiny center" fill="#6d28d9">Container stdout/stderr → ECS awslogs driver → CloudWatch; Execution Role only authorizes it.</text>
+
+  <!-- Visible storage hierarchy inside Amazon ECR -->
+  <path d="M486 238 V257" fill="none" stroke="#f97316" stroke-width="3"/>
+  <rect x="346" y="257" width="280" height="58" rx="14" fill="#fff7ed" stroke="#f97316" stroke-width="2"/>
+  <text x="486" y="276" class="small center" fill="#c2410c">INSIDE AMAZON ECR</text>
+  <text x="486" y="296" class="tiny center">Repository: lca-coinbase-adapter-dev</text>
+  <text x="486" y="311" class="tiny center" fill="#c2410c">Stored Docker image tags: phase1-v*</text>
+
+  <!-- Task definition controls ECS service -->
+  <path d="M755 258 V331" stroke="#2563eb" stroke-width="5" marker-end="url(#arrowBlue)"/>
+  <text x="770" y="294" class="tiny" fill="#2563eb">ECS uses blueprint</text>
+
+  <!-- Main numbered runtime flow -->
+  <circle cx="70" cy="348" r="30" fill="#17365d"/><text x="70" y="348" class="number">1</text>
+  <text x="115" y="357" class="section">SOURCE</text>
+  <circle cx="425" cy="348" r="30" fill="#17365d"/><text x="425" y="348" class="number">2</text>
+  <text x="470" y="357" class="section">COMPUTE + ORCHESTRATION</text>
+  <circle cx="1050" cy="348" r="30" fill="#17365d"/><text x="1050" y="348" class="number">3</text>
+  <text x="1095" y="357" class="section">AUTHORIZED WRITE</text>
+
+  <!-- Stage 1 -->
+  <g filter="url(#shadow)">
+    <rect x="35" y="398" width="255" height="310" rx="20" fill="#fff" stroke="#2563eb" stroke-width="3"/>
+  </g>
+  <circle cx="162" cy="484" r="52" fill="#2563eb"/>
+  <text x="162" y="495" class="title center" fill="#fff">C</text>
+  <text x="162" y="575" class="boxTitle center">Coinbase WebSocket</text>
+  <text x="162" y="611" class="label center">Generates live trade JSON</text>
+  <text x="162" y="651" class="small center">Public market stream</text>
+
+  <!-- Stage 2: ECS contains Fargate contains Docker contains Python -->
+  <g filter="url(#shadow)">
+    <rect x="385" y="380" width="565" height="388" rx="22" fill="url(#ecsFill)" stroke="#17365d" stroke-width="4"/>
+    <rect x="418" y="445" width="499" height="278" rx="20" fill="#f1fff9" stroke="#16a34a" stroke-width="3"/>
+    <rect x="448" y="514" width="439" height="176" rx="17" fill="#fff" stroke="#2563eb" stroke-width="3"/>
+  </g>
+  <text x="667" y="420" class="boxTitle center">Amazon ECS Service</text>
+  <text x="667" y="442" class="small center">Keeps 1 task running</text>
+  <text x="667" y="480" class="boxTitle center">AWS Fargate Task</text>
+  <text x="667" y="503" class="small center">Fargate supplies CPU + memory</text>
+  <text x="667" y="546" class="label center" fill="#2563eb">Docker container</text>
+  <circle cx="520" cy="609" r="38" fill="#f3f8ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="520" y="618" class="boxTitle center" fill="#2563eb">Py</text>
+  <text x="705" y="581" class="boxTitle center">Python adapter runs here</text>
+  <text x="628" y="613" class="label">1. Connects to Coinbase</text>
+  <text x="628" y="640" class="label">2. Receives live JSON</text>
+  <text x="628" y="667" class="label">3. Calls Kinesis PutRecord</text>
+  <path d="M895 694 C935 748 400 748 440 694" fill="none" stroke="#17365d" stroke-width="4" marker-end="url(#arrowBlue)"/>
+  <text x="667" y="752" class="small center">If the task stops, ECS starts a replacement task</text>
+  <rect x="457" y="773" width="420" height="34" rx="16" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="667" y="796" class="label center" fill="#17365d">ECS manages the task. Fargate provides the computer.</text>
+
+  <!-- Stage 3 permission checkpoint -->
+  <g filter="url(#shadow)">
+    <path d="M1072 405 L1190 405 L1212 438 V492 C1212 530 1160 556 1131 570 C1102 556 1050 530 1050 492 V438 Z" fill="#fbf7ff" stroke="#7c3aed" stroke-width="4"/>
+    <rect x="1325" y="405" width="240" height="303" rx="20" fill="#fff" stroke="#7c3aed" stroke-width="3"/>
+  </g>
+  <text x="1131" y="440" class="boxTitle center" fill="#6d28d9">ECS TASK ROLE</text>
+  <text x="1131" y="469" class="label center">Allows Python to call:</text>
+  <text x="1131" y="499" class="small center">kinesis:PutRecord</text>
+  <text x="1131" y="524" class="small center">kinesis:PutRecords</text>
+  <text x="1131" y="550" class="tiny center" fill="#6d28d9">Permission provider only</text>
+  <path d="M1131 570 V594" fill="none" stroke="#7c3aed" stroke-width="3" stroke-dasharray="7 5" marker-end="url(#arrowPurple)"/>
+  <rect x="990" y="674" width="322" height="66" rx="14" fill="#fff7ed" stroke="#f59e0b" stroke-width="2"/>
+  <text x="1151" y="701" class="label center">Python sends JSON directly to Kinesis.</text>
+  <text x="1151" y="725" class="label center">The Task Role only gives permission.</text>
+
+  <circle cx="1445" cy="485" r="46" fill="#7c3aed"/>
+  <text x="1445" y="496" class="boxTitle center" fill="#fff">KDS</text>
+  <text x="1445" y="566" class="boxTitle center">Amazon Kinesis</text>
+  <text x="1445" y="592" class="boxTitle center">Data Stream</text>
+  <text x="1445" y="635" class="small center">Receives and temporarily</text>
+  <text x="1445" y="657" class="small center">retains records</text>
+
+  <!-- Runtime arrows -->
+  <path d="M290 555 H385" stroke="#059669" stroke-width="13" marker-end="url(#arrowGreen)"/>
+  <rect x="286" y="514" width="126" height="30" rx="14" fill="#dcfce7"/>
+  <text x="349" y="535" class="small center" fill="#047857">Live trade JSON</text>
+  <path d="M887 603 H1325" stroke="#059669" stroke-width="8" marker-end="url(#arrowGreen)"/>
+  <rect x="954" y="574" width="304" height="24" rx="11" fill="#dcfce7"/>
+  <text x="1106" y="591" class="small center" fill="#047857">Python API call carries live JSON records</text>
+
+  <!-- Bottom summary -->
+  <rect x="15" y="825" width="1570" height="52" rx="15" fill="#102f57"/>
+  <text x="800" y="858" class="label center white">1 Coinbase creates JSON  →  2 Python runs in a Fargate task managed by ECS  →  3 Task Role permits Python to write  →  Kinesis receives records</text>
+  <text x="30" y="894" class="tiny">CloudShell was used only to build and test the image—not as the production runtime.</text>
+  <text x="1570" y="894" class="tiny" text-anchor="end">Owner: Paresh Ranjan Rout</text>
+</svg>

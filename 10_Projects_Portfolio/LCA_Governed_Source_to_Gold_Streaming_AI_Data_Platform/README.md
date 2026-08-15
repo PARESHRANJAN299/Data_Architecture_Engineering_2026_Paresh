@@ -288,8 +288,9 @@ The first manually configured AWS service is complete for the current developmen
 | 2 | Enable server-side encryption | ✅ **ACHIEVED & VERIFIED** | Encryption update succeeded with AWS-managed `aws/kinesis` |
 | 2A | Manually write and read one Kinesis record | ✅ **ACHIEVED & VERIFIED** | CloudShell write returned KMS; Data Viewer returned the expected record; [redacted evidence](phase-1-source-to-stream/evidence/manual-kinesis-write-read-smoke-test.json) |
 | 3 | Create ECS task and execution roles | ✅ **ACHIEVED & VERIFIED** | Trust verified; exact-stream allow and wildcard-deny simulations passed; [redacted evidence](phase-1-source-to-stream/evidence/manual-ecs-iam-foundation.json) |
+| 3A | Validate ECS, ECR, Fargate and IAM runtime responsibilities | ✅ **ACHIEVED & VERIFIED — DESIGN** | Final numbered blueprint and question-driven explanation completed |
 | 4A | Implement and locally test `KinesisRawMessageSink` | ✅ **ACHIEVED & VERIFIED — LOCAL** | 4 focused tests and all 16 adapter tests passed; [evidence](phase-1-source-to-stream/evidence/local-kinesis-sink-test.json) |
-| 4B | Publish versioned image to ECR | 🟠 **NEXT** | Repository settings, image URI and successful scan evidence required |
+| 4B | Publish a secure versioned image to ECR | 🟠 **IN PROGRESS** | Repository created; `phase1-v1` pushed but rejected by the security gate; `phase1-v2` built locally and still requires container testing, ECR push and a passing scan |
 | 4C | Deploy image to ECS/Fargate | ⬜ **NOT STARTED** | Runtime role assumption, healthy task and CloudWatch logs required |
 | 5 | Prove Coinbase → ECS → Kinesis | ⬜ **NOT STARTED** | Count reconciliation and unchanged-message evidence required |
 | 6 | Add Firehose → S3 Bronze | ⬜ **NOT STARTED** | Buffered objects and source-to-Bronze reconciliation required |
@@ -374,3 +375,226 @@ The completed learning is converted into separate **Data Engineer** and **Data A
 3. **Company-scale Scenario** — restart loops, duplicates, rollback, zero-downtime WebSocket deployment, environment isolation and cross-account image delivery.
 
 Interview guide: [`docs/11-ecs-ecr-fargate-data-engineering-architecture-interview-guide.md`](docs/11-ecs-ecr-fargate-data-engineering-architecture-interview-guide.md).
+
+## Phase 1 final runtime blueprint and question-driven explanation
+
+![Phase 1 final runtime blueprint](architecture/phase-1-runtime-flow-numbered-blueprint.png)
+
+Editable source: [`architecture/phase-1-runtime-flow-numbered-blueprint.svg`](architecture/phase-1-runtime-flow-numbered-blueprint.svg)
+
+> **Evidence boundary:** this diagram describes the intended Phase 1 runtime. The Kinesis stream, IAM roles, ECR repository, local container and individual permissions have been tested as recorded above. The complete ECS/Fargate runtime and end-to-end Coinbase-to-Kinesis delivery are not marked verified until their required deployment evidence passes.
+
+### The architecture contains two different flows
+
+Keeping deployment activity separate from business data movement removes most of the confusion.
+
+**Deployment flow — how the application reaches AWS compute:**
+
+```text
+Python source code + libraries + Dockerfile
+    → CloudShell builds a Docker image
+    → docker push stores the image in Amazon ECR
+    → ECS Task Definition references the ECR image URI
+    → ECS uses the Execution Role to pull the image
+    → Fargate starts a container from that image
+    → the Python adapter starts inside the container
+```
+
+**Runtime flow — how each Coinbase message reaches Kinesis:**
+
+```text
+Coinbase WebSocket
+    → live source JSON
+    → Python adapter running in the Fargate container
+    → Python calls Kinesis PutRecord or PutRecords
+    → Amazon Kinesis Data Stream receives the record
+```
+
+ECR is involved when the application is deployed or a replacement task starts. ECR is **not** in the live Coinbase-to-Kinesis data path.
+
+### Where does Amazon ECR exist?
+
+Amazon ECR is a separate AWS-managed regional service. It is not located inside CloudShell, EC2, ECS or the Fargate task.
+
+```text
+AWS account
+└── Region: us-east-1
+    └── Amazon ECR
+        └── Private repository: lca-coinbase-adapter-dev
+            ├── image tag: phase1-v1
+            └── image tag: phase1-v2, after that version is pushed
+```
+
+AWS manages ECR's underlying physical servers and storage. The project manages repositories, image tags, encryption, scanning, lifecycle and access policies—not ECR's storage machines.
+
+### What exactly does ECR store?
+
+ECR is a warehouse specifically for **container images**. A container image is the packaged application required to start a consistent container:
+
+- application source code;
+- Python runtime;
+- installed dependencies from `requirements.txt`;
+- operating-system libraries supplied by the base image;
+- filesystem content copied by the Dockerfile; and
+- the configured startup command.
+
+ECR can contain many repositories and many versioned image tags. For example, a company could store a Coinbase adapter image, customer API image and data-quality service image in separate repositories.
+
+```text
+Amazon ECR
+├── lca-coinbase-adapter-dev
+│   ├── phase1-v1
+│   └── phase1-v2
+├── customer-api
+│   ├── v1.0
+│   └── v2.0
+└── data-quality-service
+    └── v3.0
+```
+
+However, ECR does **not** store:
+
+- an API endpoint or URL;
+- Coinbase or customer business data;
+- live API responses;
+- Kinesis records; or
+- general lakehouse files such as JSON, CSV or Parquet.
+
+An API application's container image can be stored in ECR. The API endpoint itself is normally exposed through an Application Load Balancer, API Gateway or another networking service. Business data belongs in services such as S3, RDS or DynamoDB.
+
+```text
+ECR                 → stores the packaged API application image
+ECS/Fargate         → runs the API application container
+API Gateway or ALB  → provides the reachable API endpoint
+S3/RDS/DynamoDB     → stores the application's business data
+```
+
+### Docker image versus running container
+
+These are related but not identical:
+
+```text
+Dockerfile  = instructions for packaging the application
+Docker image = immutable packaged application stored in ECR
+Container    = running instance created from that image
+```
+
+The container is not literally stored “inside memory.” It runs as an isolated process on the Fargate task and consumes the CPU, memory, networking and temporary storage assigned to that task.
+
+```text
+Amazon ECR
+    → permanent stored image
+
+AWS Fargate task
+    → allocated CPU + memory + networking + ephemeral storage
+    → running container created from the ECR image
+    → Python adapter process running inside the container
+```
+
+When the Fargate task stops, its running container and temporary local storage disappear. The original versioned image remains in ECR and can be pulled again.
+
+### What do Fargate and ECS each do?
+
+Fargate provides the managed computer capacity. ECS provides orchestration.
+
+```text
+Fargate = supplies CPU, memory, networking and temporary task storage
+ECS     = defines, starts, monitors and replaces the required task
+```
+
+With ECS Service `desired count = 1`, ECS continually compares desired state with actual state:
+
+```text
+Desired: 1 running task
+Actual:  1 running task  → no action
+
+Desired: 1 running task
+Actual:  0 running tasks → ECS requests a replacement Fargate task
+```
+
+A replacement task pulls the configured image from ECR, starts a new container and runs the Python startup command. Replacement improves availability but does not guarantee zero message loss during a WebSocket restart; reconnect, checkpoint and reconciliation controls are still required.
+
+### Why are there two ECS IAM roles?
+
+Both roles grant temporary permissions, but different actors use them.
+
+#### ECS Task Role
+
+The Python application uses the Task Role after the container starts.
+
+```text
+Python application
+    → receives temporary Task Role credentials
+    → calls kinesis:PutRecord or kinesis:PutRecords
+    → writes only to the permitted Kinesis stream
+```
+
+The Task Role never carries, writes or transforms data. Python performs the API call; the role only determines whether AWS authorizes it.
+
+#### ECS Execution Role
+
+The ECS/Fargate platform uses the Execution Role to prepare and operate the task.
+
+```text
+ECS/Fargate platform
+    → assumes Execution Role
+    → receives temporary credentials
+    ├── pulls image layers from Amazon ECR
+    └── writes container logs to CloudWatch Logs
+```
+
+The Execution Role does not pull an image or send logs by itself. ECS performs those actions; the role only authorizes them. The Python application does not normally use the Execution Role.
+
+### How do logs reach CloudWatch?
+
+The container writes operational messages to standard output and standard error. The ECS `awslogs` log driver sends those streams to CloudWatch Logs using permissions supplied by the Execution Role.
+
+```text
+Python print/logging output
+    → container stdout/stderr
+    → ECS awslogs log driver
+    → CloudWatch log group and log stream
+```
+
+CloudWatch should receive operational information such as:
+
+- Coinbase connection and reconnection events;
+- subscription success or failure;
+- processed-message counts;
+- malformed-message or quarantine errors;
+- heartbeat age and sequence-gap diagnostics; and
+- container startup, shutdown and exception details.
+
+CloudWatch is not the destination for the Coinbase market dataset. Market records go to Kinesis; CloudWatch receives the application's operational logs and metrics.
+
+### Complete startup sequence
+
+1. CloudShell builds a versioned Docker image from the Dockerfile.
+2. The image is pushed to the private ECR repository.
+3. The ECS Task Definition references the exact image URI and identifies both IAM roles.
+4. ECS Service sees that one task is required.
+5. ECS/Fargate assumes the Execution Role and receives temporary credentials.
+6. ECS pulls the image layers from ECR.
+7. Fargate allocates CPU, memory, networking and ephemeral storage.
+8. Fargate creates the container and runs the configured Python command.
+9. The Python adapter receives temporary Task Role credentials.
+10. Python connects to the Coinbase WebSocket and receives live JSON messages.
+11. Python calls Kinesis `PutRecord` or `PutRecords`; the Task Role authorizes the call.
+12. The ECS log driver forwards container logs to CloudWatch; the Execution Role authorizes the log writes.
+13. If the task stops, ECS requests a replacement and repeats the relevant startup steps.
+
+### Short memory model
+
+```text
+CloudShell     = build and test workshop
+Dockerfile     = packaging instructions
+Docker image   = packaged Python application
+ECR            = permanent container-image warehouse
+Task Definition = runtime blueprint
+ECS Service    = manager keeping the desired task count running
+Fargate        = managed computer running the container
+Task Role      = permission for Python to call Kinesis
+Execution Role = permission for ECS to pull ECR images and deliver logs
+CloudWatch     = operational logs and monitoring
+Kinesis        = live streaming-record destination
+```
