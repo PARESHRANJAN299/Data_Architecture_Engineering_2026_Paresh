@@ -382,6 +382,38 @@ Interview guide: [`docs/11-ecs-ecr-fargate-data-engineering-architecture-intervi
 
 Editable source: [`architecture/phase-1-runtime-flow-numbered-blueprint.svg`](architecture/phase-1-runtime-flow-numbered-blueprint.svg)
 
+### How the Dockerfile becomes our running Python adapter
+
+```text
+1. Dockerfile contains the instructions
+   ↓
+2. Run docker build
+   ↓
+3. Docker follows each Dockerfile instruction
+   ↓
+4. Docker creates the image: phase1-v2
+   ↓
+5. Push the image to ECR
+   ↓
+6. Fargate pulls the image
+   ↓
+7. Fargate creates a container from the image
+   ↓
+8. The container automatically runs the CMD instruction
+   ↓
+9. Our Python adapter starts
+```
+
+The three objects must not be confused:
+
+```text
+Dockerfile = written build and startup instructions
+Image      = completed, versioned application package
+Container  = running instance created from the image
+```
+
+Docker does not place everything in the image automatically. During `docker build`, it reads the Dockerfile from top to bottom. `FROM` supplies the Linux and Python foundation, `RUN` installs required packages, `COPY` adds our source code, and `CMD` records the default command that a future container will execute. The image itself does not run; ECS/Fargate creates and runs a container from that image.
+
 > **Evidence boundary:** this diagram describes the intended Phase 1 runtime. The Kinesis stream, IAM roles, ECR repository, local container and individual permissions have been tested as recorded above. The complete ECS/Fargate runtime and end-to-end Coinbase-to-Kinesis delivery are not marked verified until their required deployment evidence passes.
 
 ### The architecture contains two different flows
