@@ -174,6 +174,26 @@ Phase 1 is the active build. Source selection, raw-transport architecture, gover
 
 The detailed implementation order and definition of done are maintained in [`phase-1-source-to-stream/README.md`](phase-1-source-to-stream/README.md).
 
+## Phase 1 source-to-stream achievement
+
+**Status: ✅ ACHIEVED & VERIFIED — 16 August 2026**
+
+The live AWS runtime is now operating end to end:
+
+```text
+Coinbase WebSocket
+    → phase1-v2 Python adapter
+    → ECS service on AWS Fargate
+    → IAM-authorized Kinesis PutRecord
+    → lca-coinbase-market-trades-dev
+```
+
+Verified evidence includes one healthy ECS task, successful CloudWatch connection and subscription logs, continuous Kinesis `PutRecord` activity, successful-write ratio `1`, approximately `4 ms` write latency, and 48 live Coinbase `market_trades` records visible in Kinesis Data Viewer.
+
+Detailed completion record: [docs/13-phase-1-source-to-stream-completion.md](docs/13-phase-1-source-to-stream-completion.md).
+
+> Scope boundary: this completes the Source-to-Stream runtime. Firehose → S3 Bronze is the next milestone and is not yet marked complete.
+
 ## Definition of portfolio quality
 
 This project earns credibility through evidence rather than diagrams alone: reproducible infrastructure, failure-injection results, reconciliation reports, ADRs, cost estimates, security controls, runbooks, dashboards, and a traceable path from source event to business metric.

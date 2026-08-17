@@ -255,4 +255,40 @@ Full question-by-question explanation: [`README.md`](../README.md#phase-1-final-
 
 - [Create and manage Kinesis data streams](https://docs.aws.amazon.com/streams/latest/dev/working-with-streams.html)
 - [Kinesis Data Streams quotas and limits](https://docs.aws.amazon.com/streams/latest/dev/service-sizes-and-limits.html)
-- [Kinesis consumer startup, retention and iterator-age guidance](https://docs.aws.amazon.com/streams/latest/dev/kinesis-record-processor-additional-considerations.html)
+- [Kinesis consumer startup, retention and iterator-age guidance](https://docs.aws.amazon.com/streams/latest/dev/kinesis-record-processor-additional-considerations.html)+
+
+## Deployment checkpoint — Coinbase to Kinesis verified
+
+**Status: ✅ ACHIEVED & VERIFIED on AWS**
+
+![Phase 1 deployment evidence](../architecture/phase-1-deployment-evidence-snapshot.svg)
+
+| Step | Verified result |
+|---|---|
+| Kinesis Data Stream | Active, encrypted and receiving real Coinbase records through `PutRecord` |
+| IAM | Application task role and task execution role attached correctly |
+| ECR | `phase1-v2` image stored by digest and security scan completed with zero findings |
+| CloudWatch | Dedicated log group created with 7-day retention |
+| ECS task definition | `lca-coinbase-adapter-task-dev:1` active on Fargate |
+| ECS cluster | `lca-coinbase-streaming-cluster-dev` active |
+| ECS service | One desired task, one running task and successful deployment |
+| Runtime evidence | Logs show `coinbase_connecting` and `coinbase_subscribed` |
+| Delivery evidence | Kinesis shows non-zero `PutRecord`, success ratio `1`, and approximately 4.3 ms average latency |
+
+Simple verified flow:
+
+```text
+Coinbase WebSocket
+        ↓ live JSON
+Python adapter inside the Fargate container
+        ↓ PutRecord, allowed by the ECS task role
+Amazon Kinesis Data Stream
+        ↓ operational evidence
+CloudWatch logs and Kinesis metrics
+```
+
+The ECS service-linked role is different from our two task-definition roles. `AWSServiceRoleForECS` allows the ECS control plane to manage service resources such as tasks and network interfaces. The first cluster attempt could not assume this role; after confirming that the role existed, trusted `ecs.amazonaws.com`, and had `AmazonECSServiceRolePolicy`, the retry succeeded.
+
+Full configuration, security findings, evidence and plain-language explanations are recorded in [12-phase-1-ecs-fargate-deployment-evidence.md](12-phase-1-ecs-fargate-deployment-evidence.md).
+
+> Current boundary: Coinbase → ECS/Fargate → Kinesis is verified. Amazon Data Firehose and S3 Bronze are the next build and remain **not started**.
