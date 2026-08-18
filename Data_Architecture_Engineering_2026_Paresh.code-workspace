@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "docker",
+			"path": "10_Projects_Portfolio/AI_Chatbot_Data_Platform_Databricks/phase1-foundation/docker"
+		}
+	],
+	"settings": {}
+}
